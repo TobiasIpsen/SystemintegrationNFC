@@ -1,0 +1,60 @@
+## .NET / Visual Studio ##
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# Visual Studio cache/options
+.vs/
+*.user
+*.userosscache
+*.suo
+*.userprefs
+
+# MSTest test results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+
+# NuGet
+*.nupkg
+*.snupkg
+**/[Pp]ackages/*
+!**/[Pp]ackages/build/
+*.nuget.props
+*.nuget.targets
+
+# Rider / VS Code (in case you or teammates use them)
+.idea/
+.vscode/
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Publish output
+publish/
+*.publish.xml
+*.pubxml
+*.pubxml.user
+*.azurePubxml
+
+# ASP.NET Scaffolding
+ScaffoldingReadMe.txt
+
+# Others sometimes worth excluding
+*.dbmdl
+*.dbproj.schemaview
+*.pfx
+*.publishsettings

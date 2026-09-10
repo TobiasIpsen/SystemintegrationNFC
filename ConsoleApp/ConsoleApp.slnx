@@ -1,3 +1,4 @@
 <Solution>
   <Project Path="ConsoleApp/ConsoleApp.csproj" />
+  <Project Path="TestReceiver/TestReceiver.csproj" Id="b2eae52d-eba0-4c76-80ee-dcb97e397cb6" />
 </Solution>

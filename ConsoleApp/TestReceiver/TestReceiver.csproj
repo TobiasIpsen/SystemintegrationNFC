@@ -8,8 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="BenDotNet.RFID" Version="0.2.10" />
-    <PackageReference Include="PCSC" Version="7.0.1" />
     <PackageReference Include="RabbitMQ.AMQP.Client" Version="1.4.0" />
   </ItemGroup>
 
