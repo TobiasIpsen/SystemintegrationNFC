@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="CardReader/CardReader.csproj" />
+  <Project Path="TestReceiver/TestReceiver.csproj" />
+</Solution>
