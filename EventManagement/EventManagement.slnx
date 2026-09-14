@@ -1,4 +1,5 @@
 <Solution>
   <Project Path="CardReader/CardReader.csproj" />
+  <Project Path="RaspberryPiAPI/RaspberryPiAPI.csproj" Id="38f9166d-92ec-46b9-875d-bd3428308cc9" />
   <Project Path="TestReceiver/TestReceiver.csproj" />
 </Solution>

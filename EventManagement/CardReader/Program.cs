@@ -22,7 +22,7 @@ internal class Program
             var input = Console.ReadKey();
             if (input.Key == ConsoleKey.Spacebar)
             {
-                Send_Message("Test message.");
+                Send_Message("00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00");
             }
 
             if (input.Key == ConsoleKey.Q)
@@ -80,7 +80,8 @@ internal class Program
 
     static async void Send_Message(string messageContent)
     {
-        const string brokerUri = "amqp://guest:guest@localhost:5672/%2f"; // TODO Update to rasp pi's address
+        //const string brokerUri = "amqp://guest:guest@localhost:5672/%2f"; // TODO Update to rasp pi's address
+        const string brokerUri = "amqp://guest:guest@192.168.137.1:5672/%2f";
 
         ConnectionSettings settings = ConnectionSettingsBuilder.Create()
             .Uri(new Uri(brokerUri))
@@ -93,10 +94,10 @@ internal class Program
         try
         {
             IManagement management = connection.Management();
-            IQueueSpecification queueSpec = management.Queue("hello").Type(QueueType.QUORUM);
+            IQueueSpecification queueSpec = management.Queue("nfc_sender").Type(QueueType.QUORUM);
             await queueSpec.DeclareAsync();
 
-            IPublisher publisher = await connection.PublisherBuilder().Queue("hello").BuildAsync();
+            IPublisher publisher = await connection.PublisherBuilder().Queue("nfc_sender").BuildAsync();
             try
             {
                 //const string body = messageContent; // Gives a 'must be constant' error, kept for now for reference
