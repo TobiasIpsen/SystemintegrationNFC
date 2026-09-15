@@ -80,8 +80,8 @@ internal class Program
 
     static async void Send_Message(string messageContent)
     {
-        //const string brokerUri = "amqp://guest:guest@localhost:5672/%2f"; // TODO Update to rasp pi's address
-        const string brokerUri = "amqp://guest:guest@192.168.137.1:5672/%2f";
+        const string brokerUri = "amqp://guest:guest@localhost:5672/%2f"; // Keep this around for local testing
+        //const string brokerUri = "amqp://guest:guest@192.168.137.1:5672/%2f";
 
         ConnectionSettings settings = ConnectionSettingsBuilder.Create()
             .Uri(new Uri(brokerUri))

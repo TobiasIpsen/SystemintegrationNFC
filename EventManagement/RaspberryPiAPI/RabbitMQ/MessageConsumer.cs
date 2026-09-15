@@ -6,7 +6,8 @@ namespace RaspberryPiAPI.RabbitMQ;
 
 public class MessageConsumer : BackgroundService
 {
-    const string brokerUri = "amqp://guest:guest@192.168.137.1:5672/%2f";
+    const string brokerUri = "amqp://guest:guest@localhost:5672/%2f"; // For local testing
+    /*const string brokerUri = "amqp://guest:guest@192.168.137.1:5672/%2f";*/ // For "cloud's" connection
 
     public MessageConsumer ()
     {

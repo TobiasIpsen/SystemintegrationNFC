@@ -1,0 +1,26 @@
+#{id => {'%2F_cloudsync',rabbit@d8b576783f5f},
+  machine =>
+      {module,rabbit_fifo,
+              #{name => '%2F_cloudsync',max_length => undefined,
+                max_bytes => undefined,
+                queue_resource => {resource,<<"/">>,queue,<<"cloudsync">>},
+                consumer_disconnected_timeout => 60000,
+                created => 1789478278423,dead_letter_handler => undefined,
+                overflow_strategy => drop_head,delivery_limit => 20,
+                expires => undefined,msg_ttl => undefined,
+                single_active_consumer_on => false,delayed_retry => disabled}},
+  membership => voter,friendly_name => "queue 'cloudsync' in vhost '/'",
+  cluster_name => '%2F_cloudsync',
+  metrics_labels => #{queue => <<"cloudsync">>,vhost => <<"/">>},
+  min_recovery_checkpoint_interval => 100000,uid => <<"2F_CLOLGV1M960KKQZ">>,
+  initial_machine_version => 8,
+  initial_members => [{'%2F_cloudsync',rabbit@d8b576783f5f}],
+  log_init_args =>
+      #{major_compaction_strategy => {num_minors,32},
+        min_snapshot_interval => 0,uid => <<"2F_CLOLGV1M960KKQZ">>},
+  metrics_key => {resource,<<"/">>,queue,<<"cloudsync">>},
+  ra_event_formatter =>
+      {rabbit_quorum_queue,format_ra_event,
+                           [{resource,<<"/">>,queue,<<"cloudsync">>}]},
+  tick_timeout => 5000,broadcast_time => 100,
+  install_snap_rpc_timeout => 120000,await_condition_timeout => 30000}.

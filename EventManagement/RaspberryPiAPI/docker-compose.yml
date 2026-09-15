@@ -29,5 +29,17 @@
       - PGADMIN_DEFAULT_EMAIL=root@local.com
       - PGADMIN_DEFAULT_PASSWORD=root
 
+  rabbitmq:
+    image: rabbitmq:4-management-alpine
+    restart: unless-stopped
+    ports:
+      - 5672:5672   # AMQP
+      - 15672:15672 # Management UI (http://localhost:15672)
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    volumes:
+      - ./data/rabbitmq-data:/var/lib/rabbitmq
+
 volumes:
   pgdata:
