@@ -10,7 +10,7 @@ namespace CloudBackend.Controllers
     public class UserController : ControllerBase
     {
         [HttpPost]
-        public async Task<IActionResult> CreateUser(User user, UserMessaging messaging)
+        public async Task<IActionResult> CreateUser(Student user, UserMessaging messaging)
         {
             messaging.SendMessage(user);
             Console.WriteLine(user);

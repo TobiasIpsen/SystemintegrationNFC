@@ -10,18 +10,18 @@ namespace CloudBackend.Controllers
     public class StudentsController : ControllerBase
     {
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<User>>> GetAllStudents()
+        public async Task<ActionResult<IEnumerable<Student>>> GetAllStudents()
         {
-            User u1 = new User { Id = 0, Name = "Toby", UserClass = "SOFT", CardId = "123", Image = "http..." };
-            User u2 = new User { Id = 1, Name = "Mich", UserClass = "SOFT", CardId = "321", Image = "http..." };
+            Student u1 = new Student { Id = 0, Name = "Toby", UserClass = "SOFT", CardId = "123", Image = "http..." };
+            Student u2 = new Student { Id = 1, Name = "Mich", UserClass = "SOFT", CardId = "321", Image = "http..." };
 
-            List<User> users = new List<User> { u1, u2 };
+            List<Student> users = new List<Student> { u1, u2 };
 
             return users;
         }
 
         [HttpPost]
-        public async Task<ActionResult<User>> CreateStudent(User user, UserMessaging messaging)
+        public async Task<ActionResult<Student>> CreateStudent(Student user, UserMessaging messaging)
         {
             messaging.SendMessage(user);
             Console.WriteLine(user);
@@ -30,13 +30,13 @@ namespace CloudBackend.Controllers
         }
 
         [HttpPut]
-        public async Task<ActionResult<User>> UpdateStudent(User user)
+        public async Task<ActionResult<Student>> UpdateStudent(Student user)
         {
             return Ok();
         }
 
         [HttpDelete("{id}")]
-        public async Task<ActionResult<User>> DeleteStudent(int id)
+        public async Task<ActionResult<Student>> DeleteStudent(int id)
         {
             return Ok(id);
         }
