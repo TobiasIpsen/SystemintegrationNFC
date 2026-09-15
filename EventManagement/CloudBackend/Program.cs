@@ -1,6 +1,8 @@
 
 using Amazon.S3;
+using CloudBackend.Database;
 using CloudBackend.RabbitMQ;
+using Microsoft.EntityFrameworkCore;
 
 namespace CloudBackend
 {
@@ -38,6 +40,11 @@ namespace CloudBackend
                     seaweedConfig["SecretKey"],
                     config
                 );
+            });
+
+            builder.Services.AddDbContext<Db>(options =>
+            {
+                options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
             });
 
 
