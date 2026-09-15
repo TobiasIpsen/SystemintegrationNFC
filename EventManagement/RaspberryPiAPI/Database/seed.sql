@@ -1,16 +1,16 @@
 ﻿BEGIN;
 
-CREATE TABLE IF NOT EXISTS Users_XX (
-	id primary key,
-	xx,
-	xx,
-	xx,
-	xx
+CREATE TABLE IF NOT EXISTS Students (
+	Id PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+	Name NVARCHAR(255) NOT NULL,
+	UserClass NVARCHAR(255) NOT NULL,
+	CardId NVARCHAR(255) NOT NULL,
+	Image NVARCHAR(255)
 );
 
 SAVEPOINT TableCreated_TestUserNotInputted;
 
-INSERT INTO Users_XX (xx,xx,xx)
+INSERT INTO Students (Name, UserClass, CardId)
 VALUES
 (xx,xx,"0000000000000000000000000000000000000000");
 
