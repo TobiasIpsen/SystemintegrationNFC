@@ -30,14 +30,14 @@ internal class Program
 
 
         IManagement management = connection.Management();
-        IQueueSpecification queueSpec = management.Queue("hello").Type(QueueType.QUORUM);
+        IQueueSpecification queueSpec = management.Queue("nfc_sender").Type(QueueType.QUORUM);
         await queueSpec.DeclareAsync();
 
         IConsumer consumer = await connection.ConsumerBuilder()
-            .Queue("hello")
+            .Queue("nfc_sender")
             .MessageHandler((ctx, message) =>
             {
-                Console.WriteLine($"Received a message: {Encoding.UTF8.GetString(message.Body()!)}");
+                Console.WriteLine($"Received a message: \n{Encoding.UTF8.GetString(message.Body()!)}");
                 ctx.Accept();
                 return Task.CompletedTask;
             })
