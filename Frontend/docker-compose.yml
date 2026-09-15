@@ -1,0 +1,54 @@
+version: "3.8"
+
+# Local stand-ins for "real" production infra:
+#   - postgres: a normal Postgres database (same as RDS/Cloud SQL later).
+#   - minio:    an S3-compatible object store. Same API as real S3 — the app
+#               talks to it with the AWS SDK — so swapping this for real S3
+#               later is a config change, not a code change.
+#   - minio-init: a one-shot job that creates the photos bucket and makes it
+#               publicly readable, so uploaded photos are reachable by plain
+#               URL, just like a public S3 bucket.
+#
+# Nothing here is exposed to the internet — everything binds to localhost,
+# so there's no auth/security setup needed to try this out locally.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: campus
+      POSTGRES_PASSWORD: campus
+      POSTGRES_DB: campus_access
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./server/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+
+  minio:
+    image: minio/minio:latest
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - "9000:9000" # S3 API
+      - "9001:9001" # Web console (open in a browser to see uploaded files)
+
+  minio-init:
+    image: minio/mc:latest
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      until (mc alias set local http://minio:9000 minioadmin minioadmin) do echo 'waiting for minio...'; sleep 1; done;
+      mc mb -p local/student-photos;
+      mc anonymous set download local/student-photos;
+      exit 0;
+      "
+
+volumes:
+  pgdata:
+  minio_data:
