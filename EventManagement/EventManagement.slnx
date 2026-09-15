@@ -1,5 +1,6 @@
 <Solution>
   <Project Path="CardReader/CardReader.csproj" />
+  <Project Path="ClassLibrary/ClassLibrary.csproj" Id="c0620233-921d-44dc-aab1-395632f52240" />
   <Project Path="CloudBackend/CloudBackend.csproj" Id="43c45447-8587-4a6c-bcd1-bcbb054d495d" />
   <Project Path="RaspberryPiAPI/RaspberryPiAPI.csproj" Id="38f9166d-92ec-46b9-875d-bd3428308cc9" />
   <Project Path="TestReceiver/TestReceiver.csproj" />

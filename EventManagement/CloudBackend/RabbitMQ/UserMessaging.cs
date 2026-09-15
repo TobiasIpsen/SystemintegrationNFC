@@ -55,7 +55,7 @@ namespace CloudBackend.RabbitMQ
             }
         }
 
-        public async void SendMessage(User user)
+        public async void SendMessage(Student user)
         {
             await EnsureInitializedAsync();
 
