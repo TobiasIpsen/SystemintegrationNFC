@@ -43,15 +43,15 @@ internal class Program
         {
             using var context = ContextFactory.Instance.Establish (SCardScope.System);
 
-            var readers = context.GetReaders ();
+            var cardReaders = context.GetReaders ();
 
-            if (readers.Length == 0)
+            if (cardReaders.Length == 0)
             {
-                Console.WriteLine ("NO READER FOUND");
+                Console.WriteLine ("No card reader found.");
                 return;
             }
 
-            Console.WriteLine ($"Reader: {readers[0]}");
+            Console.WriteLine ($"Card reader found: {cardReaders[0]}");
             Console.WriteLine ("Waiting for card...");
 
             using var monitor = MonitorFactory.Instance.Create (SCardScope.System);
@@ -69,7 +69,7 @@ internal class Program
                 Console.WriteLine ("CARD REMOVED");
             };
 
-            monitor.Start (readers[0]);
+            monitor.Start (cardReaders[0]);
         }
         catch (PCSC.Exceptions.NoServiceException)
         {
