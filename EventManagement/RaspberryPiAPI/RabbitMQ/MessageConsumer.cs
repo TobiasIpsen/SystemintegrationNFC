@@ -1,16 +1,22 @@
 ﻿using RabbitMQ.AMQP.Client;
 using RabbitMQ.AMQP.Client.Impl;
+using RaspberryPiAPI.Services;
 using System.Text;
 
 namespace RaspberryPiAPI.RabbitMQ;
 
 public class MessageConsumer : BackgroundService
 {
-    const string brokerUri = "amqp://guest:guest@192.168.137.1:5672/%2f";
+    const string brokerUri = "amqp://guest:guest@localhost:5672/%2f"; // For local testing
+    /*const string brokerUri = "amqp://guest:guest@192.168.137.1:5672/%2f";*/ // For "cloud's" connection
 
-    public MessageConsumer ()
+    IEventRegistrationCheckService eRegCheckService;
+
+    public MessageConsumer (IEventRegistrationCheckService eRegCheckService)
     {
         Console.WriteLine("Message Consumer was created.");
+
+        this.eRegCheckService = eRegCheckService;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -30,11 +36,22 @@ public class MessageConsumer : BackgroundService
 
         IConsumer consumer = await connection.ConsumerBuilder()
             .Queue("nfc_sender")
-            .MessageHandler((ctx, message) =>
+            .MessageHandler(async (ctx, message) =>
             {
-                Console.WriteLine($"{Timestamp()} Received an NFC message: \n{Encoding.UTF8.GetString(message.Body()!)}");
+                string messageContent = Encoding.UTF8.GetString (message.Body ()!);
+                Console.WriteLine($"{Timestamp()} Received an NFC message:");
+                Console.WriteLine ($"{messageContent}");
+
+                string cardPortion = messageContent.Substring (2, messageContent.Length - 2).Replace("-", "");
+                Console.WriteLine ($"Debug: {cardPortion} | {cardPortion.Length}");
+
+                var result = await eRegCheckService.Check_If_Is_Registered (cardPortion);
+                Console.WriteLine (result);
+
+                // TODO Ship back result via Tobysocket
+
                 ctx.Accept();
-                return Task.CompletedTask;
+                return;
             })
             .BuildAndStartAsync();
 
@@ -46,7 +63,10 @@ public class MessageConsumer : BackgroundService
             .Queue("cloudsync")
             .MessageHandler((ctx, message) =>
             {
-                Console.WriteLine($"{Timestamp()} Received a cloud sync message: \n{Encoding.UTF8.GetString(message.Body()!)}");
+                string messageContent = Encoding.UTF8.GetString (message.Body ()!);
+                Console.WriteLine($"{Timestamp()} Received a cloud sync message: \n");
+                Console.WriteLine ("{MessageContent}", messageContent);
+
                 ctx.Accept();
                 return Task.CompletedTask;
             })

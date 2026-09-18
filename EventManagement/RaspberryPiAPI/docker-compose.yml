@@ -1,0 +1,50 @@
+﻿services:
+  RaspberryPiBackendDb:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    ports:
+      - 5432:5432
+    volumes:
+      - ./data/postgres-data:/var/lib/postgresql/data_rasppibackenddb
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_DB=rasppidb
+
+  RaspPiDbPgadmin:
+    image: dpage/pgadmin4
+    restart: unless-stopped
+    depends_on:
+      - RaspberryPiBackendDb
+    ports:
+      - 8084:80
+    volumes:
+      - ./data/pgadmin-data:/var/lib/pgadmin_rasppibackend
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=root@local.com
+      - PGADMIN_DEFAULT_PASSWORD=root
+
+  rabbitmq:
+    image: rabbitmq:4-management-alpine
+    restart: unless-stopped
+    ports:
+      - 5672:5672   # AMQP
+      - 15672:15672 # Management UI (http://localhost:15672)
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    volumes:
+    # THIS IS BAD (in our context) ; RabbitMQ + Windows mount binding : RabbitMQ requires an .erlang.cookie to have 600 permissions (owner only),
+    # but when we bind-mount a Windows host folder (./data/rabbitmq-data:/var/lib/rabbitmq) straight onto /var/lib/rabbitmq , the cookie gets created
+    # inside the bind mount - and Windows bind mounts "can't represent restrictive Unix permission bits" so RabbitMQ refuses to start as a security precaution.
+      # - ./data/rabbitmq-data:/var/lib/rabbitmq
+    # Fix: RabbitMQ only needs persistence for the 'mnesia' subfolder - the .erlang.cookie is fine living in the container's own writable layer, where permissions work correctly.
+      - ./data/rabbitmq-data:/var/lib/rabbitmq/mnesia
+
+volumes:
+  pgdata:

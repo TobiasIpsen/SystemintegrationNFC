@@ -1,5 +1,7 @@
 
 using RaspberryPiAPI.RabbitMQ;
+using RaspberryPiAPI.Services;
+using Npgsql;
 using System.Net.WebSockets;
 
 namespace RaspberryPiAPI;
@@ -15,7 +17,10 @@ public class Program
         builder.Services.AddControllers();
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         builder.Services.AddOpenApi();
-
+        builder.Services.AddSingleton (NpgsqlDataSource.Create (
+            builder.Configuration.GetConnectionString ("RaspPiDb")!)
+        );
+        builder.Services.AddSingleton<IEventRegistrationCheckService, EventRegistrationCheckService> ();
         //builder.Services.AddHostedService<MessageConsumer>();
 
         builder.Services.AddCors(options =>
