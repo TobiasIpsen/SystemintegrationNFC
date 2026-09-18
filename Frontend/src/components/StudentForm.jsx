@@ -3,30 +3,32 @@ import { Grid, TextField, Typography, Box, Chip } from '@mui/material';
 import WebcamCapture, { CapturedPreview } from './WebcamCapture.jsx';
 
 export default function StudentForm({ value, onChange, events }) {
+  const eventIds = value.eventIds ?? [];
+
   const toggleEvent = (id) => {
-    const has = value.eventIds.includes(id);
+    const has = eventIds.includes(id);
     onChange({
       ...value,
-      eventIds: has ? value.eventIds.filter((e) => e !== id) : [...value.eventIds, id],
+      eventIds: has ? eventIds.filter((e) => e !== id) : [...eventIds, id],
     });
   };
 
   // Called with a fresh JPEG data URL from the webcam. We show it right away
   // and stash it in IndexedDB so it survives even if we're offline right
   // now. The actual upload to MinIO happens when the form is saved
-  // (see resolvePhotoUrl) — that's the point where we know the student
+  // (see resolveImageUrl) — that's the point where we know the student
   // record is really being created/updated.
-  const handlePhotoCapture = async (dataUrl) => {
-    onChange({ ...value, photo: dataUrl });
+  const handleImageCapture = async (dataUrl) => {
+    onChange({ ...value, image: dataUrl });
   };
 
   return (
     <Grid container spacing={2.5}>
       <Grid item xs={12} sm="auto">
-        {value.photo ? (
-          <CapturedPreview dataUrl={value.photo} onRetake={() => onChange({ ...value, photo: '' })} />
+        {value.image ? (
+          <CapturedPreview dataUrl={value.image} onRetake={() => onChange({ ...value, image: '' })} />
         ) : (
-          <WebcamCapture onCapture={handlePhotoCapture} />
+          <WebcamCapture onCapture={handleImageCapture} />
         )}
       </Grid>
       <Grid item xs={12} sm={6}>
@@ -60,8 +62,8 @@ export default function StudentForm({ value, onChange, events }) {
               key={ev.id}
               label={ev.name}
               onClick={() => toggleEvent(ev.id)}
-              color={value.eventIds.includes(ev.id) ? 'secondary' : 'default'}
-              variant={value.eventIds.includes(ev.id) ? 'filled' : 'outlined'}
+              color={eventIds.includes(ev.id) ? 'secondary' : 'default'}
+              variant={eventIds.includes(ev.id) ? 'filled' : 'outlined'}
               sx={{ mr: 1, mb: 1 }}
             />
           ))}

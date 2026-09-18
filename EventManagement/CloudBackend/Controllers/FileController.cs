@@ -19,10 +19,11 @@ namespace CloudBackend.Controllers
         }
 
         [HttpPost("generate-upload-url")]
-        public IActionResult GetPresignedUploadUrl([FromBody] UploadRequest request)
+        public IActionResult GetPresignedUploadUrl(/*[FromBody] UploadRequest request*/)
         {
-            Console.WriteLine($"-----Request Filename: {request.FileName} \n-----Request ContentType: {request.ContentType}");
-            var objectKey = $"user-upload/{Guid.NewGuid()}_{request.FileName}";
+            //Console.WriteLine($"-----Request Filename: {request.FileName} \n-----Request ContentType: {request.ContentType}");
+            Guid imageGuid = Guid.NewGuid();
+            var objectKey = $"user-upload/{imageGuid}";
 
             var presignedRequest = new GetPreSignedUrlRequest
             {
@@ -30,7 +31,7 @@ namespace CloudBackend.Controllers
                 Key = objectKey,
                 Verb = HttpVerb.PUT,
                 Expires = DateTime.UtcNow.AddMinutes(15),
-                ContentType = request.ContentType
+                //ContentType = request.ContentType
             };
 
             string uploadUrl = _s3Client.GetPreSignedURL(presignedRequest);
@@ -49,7 +50,8 @@ namespace CloudBackend.Controllers
             return Ok(new
             {
                 UploadUrl = uploadUrl,
-                ObjectKey = objectKey
+                ObjectKey = objectKey,
+                ImageGuid = imageGuid
             });
         }
     }

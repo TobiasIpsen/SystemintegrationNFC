@@ -1,12 +1,12 @@
-﻿namespace CloudBackend.Entities
+﻿namespace CloudBackend.dto
 {
-    public class Student
+    public class UpdateStudentRequest
     {
         public int Id { get; set; }
         public string Name { get; set; }
         public string ClassName { get; set; }
         public string CardId { get; set; }
         public string Image { get; set; }
-        public List<Event> Events { get; set; }
+        public List<int> EventIds { get; set; }
     }
 }

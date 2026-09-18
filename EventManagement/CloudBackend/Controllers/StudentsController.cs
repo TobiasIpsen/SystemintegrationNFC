@@ -1,5 +1,7 @@
-﻿using CloudBackend.Entities;
+﻿using CloudBackend.dto;
+using CloudBackend.Entities;
 using CloudBackend.RabbitMQ;
+using CloudBackend.Service;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,35 +11,48 @@ namespace CloudBackend.Controllers
     [ApiController]
     public class StudentsController : ControllerBase
     {
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Student>>> GetAllStudents()
+        IStudentService _service;
+        UserMessaging messaging = new UserMessaging();
+
+        public StudentsController(IStudentService service)
         {
-            Student u1 = new Student { Id = 0, Name = "Toby", UserClass = "SOFT", CardId = "123", Image = "http..." };
-            Student u2 = new Student { Id = 1, Name = "Mich", UserClass = "SOFT", CardId = "321", Image = "http..." };
+            _service = service;
+        }
 
-            List<Student> users = new List<Student> { u1, u2 };
-
-            return users;
+        [HttpGet]
+        public async Task<ActionResult<List<Student>>> GetAllStudents()
+        {
+            List<Student> list = await _service.GetAllUsers();
+            return Ok(list);
         }
 
         [HttpPost]
-        public async Task<ActionResult<Student>> CreateStudent(Student user, UserMessaging messaging)
+        public async Task<ActionResult<Student>> CreateStudent([FromBody] UpdateStudentRequest user)
         {
-            messaging.SendMessage(user);
-            Console.WriteLine(user);
-
-            return Ok();
+            Student res = await _service.CreateUser(user);
+            Student student = new Student
+            {
+                Id = user.Id,
+                Name = user.Name,
+                ClassName = user.ClassName,
+                CardId = user.CardId,
+                Image = user.Image
+            };
+            messaging.SendMessage(student);
+            return Ok(res);
         }
 
-        [HttpPut]
-        public async Task<ActionResult<Student>> UpdateStudent(Student user)
+        [HttpPut("{id}")]
+        public async Task<ActionResult<Student>> UpdateStudent(int id, [FromBody] UpdateStudentRequest user)
         {
-            return Ok();
+            Student res = await _service.UpdateUser(id, user);
+            return Ok(res);
         }
 
         [HttpDelete("{id}")]
         public async Task<ActionResult<Student>> DeleteStudent(int id)
         {
+            await _service.DeleteUser(id);
             return Ok(id);
         }
     }
