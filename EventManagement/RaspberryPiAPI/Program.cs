@@ -21,7 +21,7 @@ public class Program
             builder.Configuration.GetConnectionString ("RaspPiDb")!)
         );
         builder.Services.AddSingleton<IEventRegistrationCheckService, EventRegistrationCheckService> ();
-        //builder.Services.AddHostedService<MessageConsumer>();
+        builder.Services.AddHostedService<MessageConsumer>();
 
         builder.Services.AddCors(options =>
         {
