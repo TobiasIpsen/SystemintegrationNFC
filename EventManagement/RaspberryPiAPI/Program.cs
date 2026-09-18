@@ -2,6 +2,7 @@
 using RaspberryPiAPI.RabbitMQ;
 using RaspberryPiAPI.Services;
 using Npgsql;
+using System.Net.WebSockets;
 
 namespace RaspberryPiAPI;
 
@@ -20,10 +21,34 @@ public class Program
             builder.Configuration.GetConnectionString ("RaspPiDb")!)
         );
         builder.Services.AddSingleton<IEventRegistrationCheckService, EventRegistrationCheckService> ();
+        //builder.Services.AddHostedService<MessageConsumer>();
 
-        builder.Services.AddHostedService<MessageConsumer>();
+        builder.Services.AddCors(options =>
+        {
+            options.AddDefaultPolicy(policy =>
+            {
+                policy.WithOrigins("http://localhost:3000", "http://localhost:5173")
+                      .AllowAnyHeader()
+                      .AllowAnyMethod()
+                      .AllowCredentials();
+            });
+        });
 
         var app = builder.Build();
+
+        app.UseCors();
+
+        app.UseWebSockets();
+
+        app.Map("/ws", async context =>
+        {
+            if (context.WebSockets.IsWebSocketRequest)
+            {
+                using var webSocket = await context.WebSockets.AcceptWebSocketAsync();
+                await EchoHandler(webSocket);
+            }
+            else context.Response.StatusCode = StatusCodes.Status400BadRequest;
+        });
 
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
@@ -31,12 +56,35 @@ public class Program
             app.MapOpenApi();
         }
 
-        app.UseHttpsRedirection();
+        //app.UseHttpsRedirection();
 
         app.UseAuthorization();
 
 
         app.MapControllers();
+
+        static async Task EchoHandler(WebSocket webSocket)
+        {
+            var buffer = new byte[1024 * 4];
+
+            var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+
+            while (!result.CloseStatus.HasValue)
+            {
+                await webSocket.SendAsync(
+                    new ArraySegment<byte>(buffer, 0, result.Count),
+                    result.MessageType,
+                    result.EndOfMessage,
+                    CancellationToken.None);
+
+                result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+            }
+
+            await webSocket.CloseAsync(
+                result.CloseStatus.Value,
+                result.CloseStatusDescription,
+                CancellationToken.None);
+        }
 
         app.Run();
     }

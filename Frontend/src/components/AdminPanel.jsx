@@ -13,7 +13,7 @@ import SectionHeader from './SectionHeader.jsx';
 import EmptyState from './EmptyState.jsx';
 import StudentForm from './StudentForm.jsx';
 import * as api from '../api.js';
-import { uid, emptyEvent, makeEmptyStudent, resolvePhotoUrl } from '../utils/helpers.js';
+import { emptyEvent, makeEmptyStudent, resolveImageUrl } from '../utils/helpers.js';
 
 export default function AdminPanel({ students, events, onRefresh }) {
   const [studentDialog, setStudentDialog] = useState(null);
@@ -24,8 +24,8 @@ export default function AdminPanel({ students, events, onRefresh }) {
     setDialogError('');
     const exists = students.some((s) => s.id === studentDialog.student.id);
     try {
-      const photo = await resolvePhotoUrl(studentDialog.student);
-      const payload = { ...studentDialog.student, photo };
+      const image = await resolveImageUrl(studentDialog.student);
+      const payload = { ...studentDialog.student, image: image };
       if (exists) await api.updateStudent(payload);
       else await api.createStudent(payload);
       await onRefresh();
@@ -68,7 +68,7 @@ export default function AdminPanel({ students, events, onRefresh }) {
           action={
             <Button
               size="small" startIcon={<AddIcon />}
-              onClick={() => { setDialogError(''); setEventDialog({ event: { ...emptyEvent, id: uid() } }); }}
+              onClick={() => { setDialogError(''); setEventDialog({ event: { ...emptyEvent } }); }}
             >
               New Event
             </Button>
@@ -109,14 +109,14 @@ export default function AdminPanel({ students, events, onRefresh }) {
         <SectionHeader
           icon={<GroupsOutlinedIcon fontSize="small" />}
           title={`Users (${students.length})`}
-          action={
-            <Button
-              size="small" startIcon={<AddIcon />}
-              onClick={() => { setDialogError(''); setStudentDialog({ student: makeEmptyStudent() }); }}
-            >
-              New User
-            </Button>
-          }
+          // action={
+          //   <Button
+          //     size="small" startIcon={<AddIcon />}
+          //     onClick={() => { setDialogError(''); setStudentDialog({ student: makeEmptyStudent() }); }}
+          //   >
+          //     New User
+          //   </Button>
+          // }
         />
         {students.length === 0 ? (
           <EmptyState icon={<GroupsOutlinedIcon sx={{ fontSize: 36, opacity: 0.4 }} />} text="No students yet — add one from the User Panel or here." />
@@ -124,7 +124,7 @@ export default function AdminPanel({ students, events, onRefresh }) {
           <Table size="small">
             <TableHead>
               <TableRow>
-                <TableCell>Photo</TableCell><TableCell>Name</TableCell>
+                <TableCell>Image</TableCell><TableCell>Name</TableCell>
                 <TableCell>Class</TableCell><TableCell>Card ID</TableCell>
                 <TableCell>Events</TableCell>
                 <TableCell align="right">Actions</TableCell>
@@ -133,11 +133,11 @@ export default function AdminPanel({ students, events, onRefresh }) {
             <TableBody>
               {students.map((s) => (
                 <TableRow key={s.id} hover>
-                  <TableCell><Avatar src={s.photo} sx={{ width: 34, height: 34 }}>{s.name[0]}</Avatar></TableCell>
+                  <TableCell><Avatar src={s.image} sx={{ width: 34, height: 34 }}>{s.name[0]}</Avatar></TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>{s.name}</TableCell>
                   <TableCell>{s.className}</TableCell>
                   <TableCell>{s.cardId}</TableCell>
-                  <TableCell>{s.eventIds.length}</TableCell>
+                  <TableCell>{s.eventIds?.length ?? ''}</TableCell>
                   <TableCell align="right">
                     <Tooltip title="Edit">
                       <IconButton size="small" onClick={() => { setDialogError(''); setStudentDialog({ student: { ...s } }); }}>

@@ -41,6 +41,21 @@ export default function App() {
       .finally(() => setLoading(false));
   }, []);
 
+  const socket = new WebSocket("ws://localhost:5182/ws");
+
+  socket.addEventListener('open', (event) => {
+    console.log('Connected to WebSocket server.');
+    socket.send("Hello Server!")
+  })
+
+  socket.addEventListener('message', (event) => {
+    console.log('Message from server: ', event.data);
+  })
+
+  socket.addEventListener('close', (event) =>{
+    console.log('Connection closed');
+  })
+
   return (
     <Box>
       <AppBar
@@ -78,7 +93,7 @@ export default function App() {
           <Stack alignItems="center" sx={{ py: 10 }}><CircularProgress /></Stack>
         ) : (
           <>
-            {tab === 0 && <UserPanel events={events} />}
+            {tab === 0 && <UserPanel events={events} refresh={refresh} />}
             {tab === 1 && <AdminPanel students={students} events={events} onRefresh={refresh} />}
             {tab === 2 && <EventAccess students={students} events={events} />}
           </>

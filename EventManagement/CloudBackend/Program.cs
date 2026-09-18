@@ -2,6 +2,7 @@
 using Amazon.S3;
 using CloudBackend.Database;
 using CloudBackend.RabbitMQ;
+using CloudBackend.Service;
 using Microsoft.EntityFrameworkCore;
 
 namespace CloudBackend
@@ -42,11 +43,13 @@ namespace CloudBackend
                 );
             });
 
-            builder.Services.AddDbContext<Db>(options =>
+            builder.Services.AddDbContext<CloudDb>(options =>
             {
                 options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
             });
 
+            builder.Services.AddScoped<IStudentService, StudentService>();
+            builder.Services.AddScoped<IEventService, EventService>();
 
             builder.Services.AddControllers();
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi

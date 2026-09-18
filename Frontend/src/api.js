@@ -1,13 +1,16 @@
 async function request(path, options = {}) {
-  const res = await fetch(`http://localhost:5233/api${path}`, {
+  const res = await fetch(`http://localhost:5291/api${path}`, {
     headers: { 'Content-Type': 'application/json' },
     ...options,
   });
+  const text = await res.text();
+  const data = text ? JSON.parse(text) : null;
   if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(body.error || `Request failed (${res.status})`);
+    // const body = await res.json().catch(() => ({}));
+    throw new Error(data?.error || `Request failed (${res.status})`);
   }
-  return res.status === 204 ? null : res.json();
+  // return res.status === 204 ? null : res.json();
+  return data;
 }
 
 export const fetchUploadUrl = (fileName, contentType) =>

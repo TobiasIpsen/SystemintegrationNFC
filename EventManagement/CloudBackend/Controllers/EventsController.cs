@@ -1,4 +1,6 @@
-﻿using CloudBackend.Entities;
+﻿using CloudBackend.dto;
+using CloudBackend.Entities;
+using CloudBackend.Service;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,32 +10,38 @@ namespace CloudBackend.Controllers
     [ApiController]
     public class EventsController : ControllerBase
     {
+        IEventService _service;
+
+        public EventsController(IEventService service)
+        {
+            _service = service;
+        }
+
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Event>>> GetAllEvents()
         {
-            Event e1 = new Event { Id = 0, Name = "Sejt Event1", CreatedAt = DateTimeOffset.UtcNow };
-            Event e2 = new Event { Id = 1, Name = "Sejt Event2", CreatedAt = DateTimeOffset.UtcNow };
-
-            List<Event> events = new List<Event> { e1, e2 };
-
-            return Ok(events);
+            List<Event> list = await _service.GetAllEvents();
+            return Ok(list);
         }
 
         [HttpPost]
-        public async Task<ActionResult<Event>> CreateEvent(Event e)
+        public async Task<ActionResult<Event>> CreateEvent([FromBody] CreateEventRequest request)
         {
-            return Ok();
-        }
-
-        [HttpPut]
-        public async Task<ActionResult<Event>> UpdateEvent(Event e)
-        {
+            await _service.CreateEvent(request.Name);
             return Ok();
         }
 
         [HttpPut("{id}")]
+        public async Task<ActionResult<Event>> UpdateEvent(int id, [FromBody] CreateEventRequest request)
+        {
+            await _service.UpdateEvent(id, request.Name);
+            return Ok();
+        }
+
+        [HttpDelete("{id}")]
         public async Task<ActionResult<Event>> DeleteEvent(int id)
         {
+            await _service.DeleteEvent(id);
             return Ok(id);
         }
 
