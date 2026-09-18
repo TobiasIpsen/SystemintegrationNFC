@@ -41,6 +41,21 @@ export default function App() {
       .finally(() => setLoading(false));
   }, []);
 
+  const socket = new WebSocket("ws://localhost:5182/ws");
+
+  socket.addEventListener('open', (event) => {
+    console.log('Connected to WebSocket server.');
+    socket.send("Hello Server!")
+  })
+
+  socket.addEventListener('message', (event) => {
+    console.log('Message from server: ', event.data);
+  })
+
+  socket.addEventListener('close', (event) =>{
+    console.log('Connection closed');
+  })
+
   return (
     <Box>
       <AppBar
