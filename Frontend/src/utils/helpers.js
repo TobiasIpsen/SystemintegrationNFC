@@ -5,7 +5,6 @@ export const uid = () => Math.random().toString(36).slice(2, 9);
 export const emptyEvent = { name: "" };
 
 export const makeEmptyStudent = () => ({
-  id: uid(),
   name: "",
   className: "",
   cardId: "",
@@ -28,14 +27,18 @@ function dataUrlToBlob(dataUrl) {
 }
 
 export async function resolveImageUrl(student) {
-  if (!student.image || !student.image.startsWith("data:"))
-    return student.image || null;
+  if (student.image && student.image.startsWith("data:")) {
+    const { blob, contentType } = dataUrlToBlob(student.image);
+    const { uploadUrl, objectKey, imageGuid } = await api.fetchUploadUrl();
+    await api.uploadToPresignedUrl(uploadUrl, blob, contentType);
+    return { objectKey, imageGuid };
+  }
 
-  const { blob, contentType } = dataUrlToBlob(student.image);
-  console.log(contentType);
-  
-  const fileName = `${student.id}.jpg`
-  const { uploadUrl, objectKey } = await api.fetchUploadUrl(fileName, contentType);
-  await api.uploadToPresignedUrl(uploadUrl, blob, contentType);
-  return objectKey;
+  // If image already exists (is a URL/GUID), return it as-is
+  if (student.image) {
+    return student.image;
+  }
+
+  // No image provided
+  throw new Error("Please take a photo");
 }

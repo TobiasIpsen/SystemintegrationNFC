@@ -5,9 +5,9 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import SectionHeader from "./SectionHeader.jsx";
 import StudentForm from "./StudentForm.jsx";
 import { makeEmptyStudent, resolveImageUrl } from "../utils/helpers.js";
-import * as api from '../api.js';
+import * as api from "../api.js";
 
-export default function UserPanel({ events }) {
+export default function UserPanel({ events, refresh }) {
   const [form, setForm] = useState(makeEmptyStudent);
   const [justAdded, setJustAdded] = useState(false);
   const [error, setError] = useState("");
@@ -21,14 +21,17 @@ export default function UserPanel({ events }) {
     if (!form.name || !form.cardId) return;
     setError("");
     try {
-      const image = await resolveImageUrl(form);
-      await handleCreateStudent({ ...form, image });
+      const result = await resolveImageUrl(form);
+      if (!result) return;
+      const { objectKey, imageGuid } = result;
+
+      await handleCreateStudent({ ...form, image: imageGuid });
       setForm(makeEmptyStudent());
       setJustAdded(true);
       setTimeout(() => setJustAdded(false), 2500);
     } catch (err) {
       console.log(err);
-      
+
       setError(err.message || "Could not create student.");
     }
   };

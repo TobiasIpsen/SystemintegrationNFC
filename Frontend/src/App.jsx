@@ -78,7 +78,7 @@ export default function App() {
           <Stack alignItems="center" sx={{ py: 10 }}><CircularProgress /></Stack>
         ) : (
           <>
-            {tab === 0 && <UserPanel events={events} />}
+            {tab === 0 && <UserPanel events={events} refresh={refresh} />}
             {tab === 1 && <AdminPanel students={students} events={events} onRefresh={refresh} />}
             {tab === 2 && <EventAccess students={students} events={events} />}
           </>

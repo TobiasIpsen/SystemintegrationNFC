@@ -3,11 +3,13 @@ import { Grid, TextField, Typography, Box, Chip } from '@mui/material';
 import WebcamCapture, { CapturedPreview } from './WebcamCapture.jsx';
 
 export default function StudentForm({ value, onChange, events }) {
+  const eventIds = value.eventIds ?? [];
+
   const toggleEvent = (id) => {
-    const has = value.eventIds.includes(id);
+    const has = eventIds.includes(id);
     onChange({
       ...value,
-      eventIds: has ? value.eventIds.filter((e) => e !== id) : [...value.eventIds, id],
+      eventIds: has ? eventIds.filter((e) => e !== id) : [...eventIds, id],
     });
   };
 
@@ -60,8 +62,8 @@ export default function StudentForm({ value, onChange, events }) {
               key={ev.id}
               label={ev.name}
               onClick={() => toggleEvent(ev.id)}
-              color={value.eventIds.includes(ev.id) ? 'secondary' : 'default'}
-              variant={value.eventIds.includes(ev.id) ? 'filled' : 'outlined'}
+              color={eventIds.includes(ev.id) ? 'secondary' : 'default'}
+              variant={eventIds.includes(ev.id) ? 'filled' : 'outlined'}
               sx={{ mr: 1, mb: 1 }}
             />
           ))}
