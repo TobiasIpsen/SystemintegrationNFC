@@ -22,7 +22,11 @@ internal class Program
             var input = Console.ReadKey();
             if (input.Key == ConsoleKey.Spacebar)
             {
-                Send_Message("00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00");
+                // Note: Message format from NFC reader is 40 hexadecimal chars
+                // Note: Currently prefixing which machine, e.g. for a test-machine aimed at the testuser in DB from seed.sql:
+                // 0_0000000000000000000000000000000000000000
+
+                Send_Message ("0_00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00");
             }
 
             if (input.Key == ConsoleKey.Q)
@@ -61,7 +65,8 @@ internal class Program
                 Console.WriteLine("CARD INSERTED");
                 Console.WriteLine($"ATR: {BitConverter.ToString(e.Atr)}");
 
-                Send_Message(BitConverter.ToString(e.Atr));
+                // Uncertain if this works
+                Send_Message("1_"+BitConverter.ToString(e.Atr));
             };
 
             monitor.CardRemoved += (_, _) =>

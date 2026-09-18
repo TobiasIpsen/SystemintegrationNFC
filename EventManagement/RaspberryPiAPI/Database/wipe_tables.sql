@@ -1,1 +1,4 @@
-TRUNCATE TABLE Students, Events RESTART IDENTITY CASCADE;
+TRUNCATE TABLE Students, Events, EventRegistrations RESTART IDENTITY CASCADE;
+
+
+
