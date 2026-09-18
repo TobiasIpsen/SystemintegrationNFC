@@ -1,4 +1,5 @@
-﻿using CloudBackend.Entities;
+﻿using CloudBackend.dto;
+using CloudBackend.Entities;
 using CloudBackend.RabbitMQ;
 using CloudBackend.Service;
 using Microsoft.AspNetCore.Http;
@@ -11,6 +12,7 @@ namespace CloudBackend.Controllers
     public class StudentsController : ControllerBase
     {
         IStudentService _service;
+        UserMessaging messaging = new UserMessaging();
 
         public StudentsController(IStudentService service)
         {
@@ -21,21 +23,29 @@ namespace CloudBackend.Controllers
         public async Task<ActionResult<List<Student>>> GetAllStudents()
         {
             List<Student> list = await _service.GetAllUsers();
-            return list;
+            return Ok(list);
         }
 
         [HttpPost]
-        public async Task<ActionResult<Student>> CreateStudent(Student user, UserMessaging messaging)
+        public async Task<ActionResult<Student>> CreateStudent([FromBody] UpdateStudentRequest user)
         {
             Student res = await _service.CreateUser(user);
-            messaging.SendMessage(user);
+            Student student = new Student
+            {
+                Id = user.Id,
+                Name = user.Name,
+                ClassName = user.ClassName,
+                CardId = user.CardId,
+                Image = user.Image
+            };
+            messaging.SendMessage(student);
             return Ok(res);
         }
 
-        [HttpPut]
-        public async Task<ActionResult<Student>> UpdateStudent(Student user)
+        [HttpPut("{id}")]
+        public async Task<ActionResult<Student>> UpdateStudent(int id, [FromBody] UpdateStudentRequest user)
         {
-            Student res = await _service.UpdateUser(user);
+            Student res = await _service.UpdateUser(id, user);
             return Ok(res);
         }
 

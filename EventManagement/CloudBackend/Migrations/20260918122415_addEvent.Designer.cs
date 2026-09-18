@@ -3,6 +3,7 @@ using System;
 using CloudBackend.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CloudBackend.Migrations
 {
     [DbContext(typeof(CloudDb))]
-    partial class CloudDbModelSnapshot : ModelSnapshot
+    [Migration("20260918122415_addEvent")]
+    partial class addEvent
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -37,10 +40,12 @@ namespace CloudBackend.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int?>("StudentId")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("Name")
-                        .IsUnique();
+                    b.HasIndex("StudentId");
 
                     b.ToTable("Events");
                 });
@@ -74,34 +79,16 @@ namespace CloudBackend.Migrations
                     b.ToTable("Students");
                 });
 
-            modelBuilder.Entity("EventStudent", b =>
+            modelBuilder.Entity("CloudBackend.Entities.Event", b =>
                 {
-                    b.Property<int>("EventsId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("StudentsId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("EventsId", "StudentsId");
-
-                    b.HasIndex("StudentsId");
-
-                    b.ToTable("EventStudent");
+                    b.HasOne("CloudBackend.Entities.Student", null)
+                        .WithMany("Events")
+                        .HasForeignKey("StudentId");
                 });
 
-            modelBuilder.Entity("EventStudent", b =>
+            modelBuilder.Entity("CloudBackend.Entities.Student", b =>
                 {
-                    b.HasOne("CloudBackend.Entities.Event", null)
-                        .WithMany()
-                        .HasForeignKey("EventsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("CloudBackend.Entities.Student", null)
-                        .WithMany()
-                        .HasForeignKey("StudentsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Navigation("Events");
                 });
 #pragma warning restore 612, 618
         }

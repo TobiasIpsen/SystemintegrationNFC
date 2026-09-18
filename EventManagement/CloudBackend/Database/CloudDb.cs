@@ -10,5 +10,14 @@ namespace CloudBackend.Database
 
 
         public DbSet<Student> Students { get; set; }
+        public DbSet<Event> Events { get; set; }
+
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Event>()
+                .HasIndex(e => e.Name)
+                .IsUnique();
+        }
     }
 }
