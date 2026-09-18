@@ -4,7 +4,7 @@ import PersonAddAltIcon from "@mui/icons-material/PersonAddAlt";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import SectionHeader from "./SectionHeader.jsx";
 import StudentForm from "./StudentForm.jsx";
-import { makeEmptyStudent, resolvePhotoUrl } from "../utils/helpers.js";
+import { makeEmptyStudent, resolveImageUrl } from "../utils/helpers.js";
 import * as api from '../api.js';
 
 export default function UserPanel({ events }) {
@@ -21,8 +21,8 @@ export default function UserPanel({ events }) {
     if (!form.name || !form.cardId) return;
     setError("");
     try {
-      const photo = await resolvePhotoUrl(form);
-      await handleCreateStudent({ ...form, photo });
+      const image = await resolveImageUrl(form);
+      await handleCreateStudent({ ...form, image });
       setForm(makeEmptyStudent());
       setJustAdded(true);
       setTimeout(() => setJustAdded(false), 2500);

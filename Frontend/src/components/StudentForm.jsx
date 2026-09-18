@@ -14,19 +14,19 @@ export default function StudentForm({ value, onChange, events }) {
   // Called with a fresh JPEG data URL from the webcam. We show it right away
   // and stash it in IndexedDB so it survives even if we're offline right
   // now. The actual upload to MinIO happens when the form is saved
-  // (see resolvePhotoUrl) — that's the point where we know the student
+  // (see resolveImageUrl) — that's the point where we know the student
   // record is really being created/updated.
-  const handlePhotoCapture = async (dataUrl) => {
-    onChange({ ...value, photo: dataUrl });
+  const handleImageCapture = async (dataUrl) => {
+    onChange({ ...value, image: dataUrl });
   };
 
   return (
     <Grid container spacing={2.5}>
       <Grid item xs={12} sm="auto">
-        {value.photo ? (
-          <CapturedPreview dataUrl={value.photo} onRetake={() => onChange({ ...value, photo: '' })} />
+        {value.image ? (
+          <CapturedPreview dataUrl={value.image} onRetake={() => onChange({ ...value, image: '' })} />
         ) : (
-          <WebcamCapture onCapture={handlePhotoCapture} />
+          <WebcamCapture onCapture={handleImageCapture} />
         )}
       </Grid>
       <Grid item xs={12} sm={6}>

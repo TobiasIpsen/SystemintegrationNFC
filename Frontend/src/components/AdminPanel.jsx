@@ -13,7 +13,7 @@ import SectionHeader from './SectionHeader.jsx';
 import EmptyState from './EmptyState.jsx';
 import StudentForm from './StudentForm.jsx';
 import * as api from '../api.js';
-import { uid, emptyEvent, makeEmptyStudent, resolvePhotoUrl } from '../utils/helpers.js';
+import { uid, emptyEvent, makeEmptyStudent, resolveImageUrl } from '../utils/helpers.js';
 
 export default function AdminPanel({ students, events, onRefresh }) {
   const [studentDialog, setStudentDialog] = useState(null);
@@ -24,8 +24,8 @@ export default function AdminPanel({ students, events, onRefresh }) {
     setDialogError('');
     const exists = students.some((s) => s.id === studentDialog.student.id);
     try {
-      const photo = await resolvePhotoUrl(studentDialog.student);
-      const payload = { ...studentDialog.student, photo };
+      const image = await resolveImageUrl(studentDialog.student);
+      const payload = { ...studentDialog.student, image };
       if (exists) await api.updateStudent(payload);
       else await api.createStudent(payload);
       await onRefresh();
@@ -124,7 +124,7 @@ export default function AdminPanel({ students, events, onRefresh }) {
           <Table size="small">
             <TableHead>
               <TableRow>
-                <TableCell>Photo</TableCell><TableCell>Name</TableCell>
+                <TableCell>Image</TableCell><TableCell>Name</TableCell>
                 <TableCell>Class</TableCell><TableCell>Card ID</TableCell>
                 <TableCell>Events</TableCell>
                 <TableCell align="right">Actions</TableCell>
@@ -133,7 +133,7 @@ export default function AdminPanel({ students, events, onRefresh }) {
             <TableBody>
               {students.map((s) => (
                 <TableRow key={s.id} hover>
-                  <TableCell><Avatar src={s.photo} sx={{ width: 34, height: 34 }}>{s.name[0]}</Avatar></TableCell>
+                  <TableCell><Avatar src={s.image} sx={{ width: 34, height: 34 }}>{s.name[0]}</Avatar></TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>{s.name}</TableCell>
                   <TableCell>{s.className}</TableCell>
                   <TableCell>{s.cardId}</TableCell>

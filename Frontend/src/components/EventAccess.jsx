@@ -115,7 +115,7 @@ export default function EventAccess({ students, events }) {
           }}
         >
           <Avatar
-            src={scan.student?.photo}
+            src={scan.student?.image}
             sx={{
               width: 104, height: 104, mx: 'auto', mb: 2, fontSize: 36,
               border: '4px solid', borderColor: current.color,
@@ -143,7 +143,7 @@ export default function EventAccess({ students, events }) {
         ) : (
           <Table size="small">
             <TableHead>
-              <TableRow><TableCell>Photo</TableCell><TableCell>Name</TableCell><TableCell>Class</TableCell></TableRow>
+              <TableRow><TableCell>Image</TableCell><TableCell>Name</TableCell><TableCell>Class</TableCell></TableRow>
             </TableHead>
             <TableBody>
               {history.map((studentId) => {
@@ -151,7 +151,7 @@ export default function EventAccess({ students, events }) {
                 if (!s) return null;
                 return (
                   <TableRow key={studentId} hover>
-                    <TableCell><Avatar src={s.photo} sx={{ width: 32, height: 32 }}>{s.name[0]}</Avatar></TableCell>
+                    <TableCell><Avatar src={s.image} sx={{ width: 32, height: 32 }}>{s.name[0]}</Avatar></TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>{s.name}</TableCell>
                     <TableCell>{s.className}</TableCell>
                   </TableRow>

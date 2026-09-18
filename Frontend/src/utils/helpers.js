@@ -7,9 +7,9 @@ export const emptyEvent = { name: "" };
 export const makeEmptyStudent = () => ({
   id: uid(),
   name: "",
-  photo: "",
-  cardId: "",
   className: "",
+  cardId: "",
+  image: "",
   eventIds: [],
 });
 
@@ -27,16 +27,15 @@ function dataUrlToBlob(dataUrl) {
   return { blob: new Blob([array], { type: contentType }), contentType };
 }
 
-export async function resolvePhotoUrl(student) {
-  if (!student.photo || !student.photo.startsWith("data:"))
-    return student.photo || null;
+export async function resolveImageUrl(student) {
+  if (!student.image || !student.image.startsWith("data:"))
+    return student.image || null;
 
-  const { blob, contentType } = dataUrlToBlob(student.photo);
+  const { blob, contentType } = dataUrlToBlob(student.image);
   console.log(contentType);
   
   const fileName = `${student.id}.jpg`
   const { uploadUrl, objectKey } = await api.fetchUploadUrl(fileName, contentType);
   await api.uploadToPresignedUrl(uploadUrl, blob, contentType);
-  await markSynced(student.id);
   return objectKey;
 }
