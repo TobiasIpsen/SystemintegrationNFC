@@ -5,6 +5,6 @@ namespace CloudBackend.Database
 {
     public class Db(DbContextOptions<Db> options) : DbContext(options)
     {
-        DbSet<User> Students { get; set; }
+        //DbSet<User> Students { get; set; }
     }
 }

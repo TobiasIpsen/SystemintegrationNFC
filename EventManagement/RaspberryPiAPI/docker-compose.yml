@@ -39,7 +39,12 @@
       - RABBITMQ_DEFAULT_USER=guest
       - RABBITMQ_DEFAULT_PASS=guest
     volumes:
-      - ./data/rabbitmq-data:/var/lib/rabbitmq
+    # THIS IS BAD (in our context) ; RabbitMQ + Windows mount binding : RabbitMQ requires an .erlang.cookie to have 600 permissions (owner only),
+    # but when we bind-mount a Windows host folder (./data/rabbitmq-data:/var/lib/rabbitmq) straight onto /var/lib/rabbitmq , the cookie gets created
+    # inside the bind mount - and Windows bind mounts "can't represent restrictive Unix permission bits" so RabbitMQ refuses to start as a security precaution.
+      # - ./data/rabbitmq-data:/var/lib/rabbitmq
+    # Fix: RabbitMQ only needs persistence for the 'mnesia' subfolder - the .erlang.cookie is fine living in the container's own writable layer, where permissions work correctly.
+      - ./data/rabbitmq-data:/var/lib/rabbitmq/mnesia
 
 volumes:
   pgdata:
