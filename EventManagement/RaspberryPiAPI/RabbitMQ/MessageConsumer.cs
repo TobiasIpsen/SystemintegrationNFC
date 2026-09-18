@@ -47,7 +47,13 @@ public class MessageConsumer : BackgroundService
             .Queue("cloudsync")
             .MessageHandler((ctx, message) =>
             {
-                Console.WriteLine($"{Timestamp()} Received a cloud sync message: \n{Encoding.UTF8.GetString(message.Body()!)}");
+                string messageContent = Encoding.UTF8.GetString (message.Body ()!);
+                Console.WriteLine($"{Timestamp()} Received a cloud sync message: \n");
+                Console.WriteLine ("{MessageContent} {RandomTest}", messageContent, 22);
+
+                // TODO Match against DB, verify incoming Id has access to event
+
+
                 ctx.Accept();
                 return Task.CompletedTask;
             })

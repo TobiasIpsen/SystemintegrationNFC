@@ -1,9 +1,8 @@
-﻿namespace CloudBackend.Entities
+﻿namespace CloudBackend.Entities;
+
+public class Event
 {
-    public class Event
-    {
-        public int Id { get; set; }
-        public string Name { get; set; }
-        public DateTimeOffset CreatedAt { get; set; }
-    }
+    public int Id { get; set; }
+    public string Name { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
 }
