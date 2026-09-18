@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CloudBackend.Service
 {
-    public class StudentService// : IStudentService
+    public class StudentService : IStudentService
     {
         private CloudDb _context;
 
