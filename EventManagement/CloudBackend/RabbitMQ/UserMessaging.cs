@@ -47,7 +47,7 @@ namespace CloudBackend.RabbitMQ
                     await management.CloseAsync();
                 }
 
-                publisher = await connection.PublisherBuilder().Queue("cloudsync").BuildAsync();
+                publisher = await connection.PublisherBuilder().Queue(queueName).BuildAsync();
             }
             finally
             {
@@ -55,12 +55,12 @@ namespace CloudBackend.RabbitMQ
             }
         }
 
-        public async void SendMessage(Student user)
+        public async void SendMessage(Student student)
         {
             await EnsureInitializedAsync();
 
             var msg = new {
-                User = user,
+                Student = student,
                 Timestamp = DateTimeOffset.UtcNow
             };
 

@@ -1,5 +1,6 @@
 ﻿using CloudBackend.Entities;
 using CloudBackend.RabbitMQ;
+using CloudBackend.Service;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,35 +10,39 @@ namespace CloudBackend.Controllers
     [ApiController]
     public class StudentsController : ControllerBase
     {
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Student>>> GetAllStudents()
+        IStudentService _service;
+
+        public StudentsController(IStudentService service)
         {
-            Student u1 = new Student { Id = 0, Name = "Toby", UserClass = "SOFT", CardId = "123", Image = "http..." };
-            Student u2 = new Student { Id = 1, Name = "Mich", UserClass = "SOFT", CardId = "321", Image = "http..." };
+            _service = service;
+        }
 
-            List<Student> users = new List<Student> { u1, u2 };
-
-            return users;
+        [HttpGet]
+        public async Task<ActionResult<List<Student>>> GetAllStudents()
+        {
+            List<Student> list = await _service.GetAllUsers();
+            return list;
         }
 
         [HttpPost]
         public async Task<ActionResult<Student>> CreateStudent(Student user, UserMessaging messaging)
         {
+            Student res = await _service.CreateUser(user);
             messaging.SendMessage(user);
-            Console.WriteLine(user);
-
-            return Ok();
+            return Ok(res);
         }
 
         [HttpPut]
         public async Task<ActionResult<Student>> UpdateStudent(Student user)
         {
-            return Ok();
+            Student res = await _service.UpdateUser(user);
+            return Ok(res);
         }
 
         [HttpDelete("{id}")]
         public async Task<ActionResult<Student>> DeleteStudent(int id)
         {
+            await _service.DeleteUser(id);
             return Ok(id);
         }
     }
