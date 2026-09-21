@@ -43,7 +43,7 @@ public class MessageConsumer : BackgroundService
                 Console.WriteLine ($"{messageContent}");
 
                 string cardPortion = messageContent.Substring (2, messageContent.Length - 2).Replace("-", "");
-                Console.WriteLine ($"Debug: {cardPortion} | {cardPortion.Length}");
+                //Console.WriteLine ($"Debug: {cardPortion} | {cardPortion.Length}");
 
                 var result = await eRegCheckService.Check_If_Is_Registered (cardPortion);
                 Console.WriteLine (result);
