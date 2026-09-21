@@ -2,6 +2,7 @@ services:
   CloudBackendDb:
     image: postgres:18-alpine
     restart: unless-stopped
+    container_name: "nfcclouddb"
     ports:
       - 5532:5432
     volumes:

@@ -41,20 +41,28 @@ export default function App() {
       .finally(() => setLoading(false));
   }, []);
 
-  const socket = new WebSocket("ws://localhost:5182/ws");
+  const [clientId] = useState(() => {
+    const stored = sessionStorage.getItem('clientId');
+    if (stored) return stored;
 
-  socket.addEventListener('open', (event) => {
-    console.log('Connected to WebSocket server.');
-    socket.send("Hello Server!")
+    const newID = crypto.randomUUID();
+    sessionStorage.setItem('clientId', newID);
+    return newId;
   })
 
-  socket.addEventListener('message', (event) => {
-    console.log('Message from server: ', event.data);
-  })
+  useEffect(() => {
+    const ws = new WebSocket(`ws://localhost:5182/ws?clientId=${clientId}`);
 
-  socket.addEventListener('close', (event) =>{
-    console.log('Connection closed');
-  })
+    ws.onopen = () => console.log('Connected');
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      console.log('Received:', data);
+    }
+    ws.onerror = (err) => console.log('WebSocket error:', err);
+    ws.onclose = () => console.log('Disconnected');
+    
+    return () => ws.close()
+  }, [clientId])
 
   return (
     <Box>

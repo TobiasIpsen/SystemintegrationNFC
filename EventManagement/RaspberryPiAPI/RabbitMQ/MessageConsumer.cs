@@ -1,7 +1,10 @@
-﻿using RabbitMQ.AMQP.Client;
+﻿using ClassLibrary;
+using Microsoft.AspNetCore.SignalR;
+using RabbitMQ.AMQP.Client;
 using RabbitMQ.AMQP.Client.Impl;
 using RaspberryPiAPI.Services;
 using System.Text;
+using System.Text.Json;
 
 namespace RaspberryPiAPI.RabbitMQ;
 
@@ -9,6 +12,7 @@ public class MessageConsumer : BackgroundService
 {
     const string brokerUri = "amqp://guest:guest@localhost:5672/%2f"; // For local testing
     /*const string brokerUri = "amqp://guest:guest@192.168.137.1:5672/%2f";*/ // For "cloud's" connection
+    WebSocketClientManager manager = new WebSocketClientManager();
 
     IEventRegistrationCheckService eRegCheckService;
 
@@ -46,6 +50,7 @@ public class MessageConsumer : BackgroundService
                 Console.WriteLine ($"Debug: {cardPortion} | {cardPortion.Length}");
 
                 var result = await eRegCheckService.Check_If_Is_Registered (cardPortion);
+                manager.SendToClientAsync(, deserializedMessage);
                 Console.WriteLine (result);
 
                 // TODO Ship back result via Tobysocket
@@ -63,9 +68,10 @@ public class MessageConsumer : BackgroundService
             .Queue("cloudsync")
             .MessageHandler((ctx, message) =>
             {
-                string messageContent = Encoding.UTF8.GetString (message.Body ()!);
+                string messageContent = Encoding.UTF8.GetString(message.Body()!);
+                MessageType deserializedMessage = JsonSerializer.Deserialize<MessageType>(messageContent);
                 Console.WriteLine($"{Timestamp()} Received a cloud sync message: \n");
-                Console.WriteLine ("{MessageContent}", messageContent);
+                Console.WriteLine($"MessageContent {messageContent}");
 
                 ctx.Accept();
                 return Task.CompletedTask;

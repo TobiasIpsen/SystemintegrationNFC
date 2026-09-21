@@ -11,16 +11,17 @@ public class Program
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+        var clientManager = new WebSocketClientManager();
 
         // Add services to the container.
 
         builder.Services.AddControllers();
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         builder.Services.AddOpenApi();
-        builder.Services.AddSingleton (NpgsqlDataSource.Create (
-            builder.Configuration.GetConnectionString ("RaspPiDb")!)
+        builder.Services.AddSingleton(NpgsqlDataSource.Create(
+            builder.Configuration.GetConnectionString("RaspPiDb")!)
         );
-        builder.Services.AddSingleton<IEventRegistrationCheckService, EventRegistrationCheckService> ();
+        builder.Services.AddSingleton<IEventRegistrationCheckService, EventRegistrationCheckService>();
         //builder.Services.AddHostedService<MessageConsumer>();
 
         builder.Services.AddCors(options =>
@@ -44,8 +45,30 @@ public class Program
         {
             if (context.WebSockets.IsWebSocketRequest)
             {
-                using var webSocket = await context.WebSockets.AcceptWebSocketAsync();
-                await EchoHandler(webSocket);
+                var webSocket = await context.WebSockets.AcceptWebSocketAsync();
+
+                var clientId = context.Request.Query["clientId"].ToString() ?? Guid.NewGuid().ToString();
+
+                clientManager.RegisterClient(clientId, webSocket);
+
+                await clientManager.SendToClientAsync(clientId, new { type = "connected", clientId });
+
+                try
+                {
+                    var client = new WebSocketClient(clientId, webSocket);
+                    while (true)
+                    {
+                        var message = await client.ReceiveAsync();
+                        if (message == null) break;
+
+                        Console.WriteLine($"Client {clientId}: {message}");
+                    }
+                }
+                finally
+                {
+                    clientManager.RemoveClient(clientId);
+                    webSocket.Dispose();
+                }
             }
             else context.Response.StatusCode = StatusCodes.Status400BadRequest;
         });
@@ -60,31 +83,7 @@ public class Program
 
         app.UseAuthorization();
 
-
-        app.MapControllers();
-
-        static async Task EchoHandler(WebSocket webSocket)
-        {
-            var buffer = new byte[1024 * 4];
-
-            var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
-
-            while (!result.CloseStatus.HasValue)
-            {
-                await webSocket.SendAsync(
-                    new ArraySegment<byte>(buffer, 0, result.Count),
-                    result.MessageType,
-                    result.EndOfMessage,
-                    CancellationToken.None);
-
-                result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
-            }
-
-            await webSocket.CloseAsync(
-                result.CloseStatus.Value,
-                result.CloseStatusDescription,
-                CancellationToken.None);
-        }
+        app.MapControllers(); 
 
         app.Run();
     }
