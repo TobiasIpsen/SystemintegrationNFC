@@ -1,4 +1,5 @@
-﻿using RaspberryPiAPI.Entities;
+﻿using CloudBackend.Entities;
+using RaspberryPiAPI.Entities;
 using System.Collections.Concurrent;
 using System.Net.WebSockets;
 using System.Security.Cryptography;
@@ -9,6 +10,12 @@ namespace RaspberryPiAPI.Services
 {
     public class WebSocketClientManager
     {
+        IStudentData data;
+        public WebSocketClientManager(IStudentData studentData)
+        {
+            data = studentData;
+        }
+
         private readonly ConcurrentDictionary<string, Scanner> _scanners = new ConcurrentDictionary<string, Scanner>();
         private readonly ConcurrentDictionary<string, FrontendClient> _frontendClients = new ConcurrentDictionary<string, FrontendClient>();
 
@@ -129,5 +136,42 @@ namespace RaspberryPiAPI.Services
             _scanners.TryGetValue(scannerId, out var backend);
             return backend;
         }
+
+
+        public async Task BroadcastEventList()
+        {
+            List<Event> events = await data.GetEvents();
+
+            var message = new
+            {
+                type = "event_list_updated",
+                events
+            };
+
+            var tasks = _frontendClients
+                .Values
+                .Select(c => SendToFrontendAsync(c.Id, message));
+
+            await Task.WhenAll(tasks);
+        }
+
+        public void SelectEventId(string frontendClientId, int eventId)
+        {
+            if(_frontendClients.TryGetValue(frontendClientId, out var client))
+            {
+                client.EventId = eventId;
+            }
+        }
+
+        public int GetEventFromFrontend(string scannerId)
+        {
+            var targetClients = _frontendClients
+                .Values
+                .Where(c => c.SelectedScannerId == scannerId)
+                .ToList();
+
+            return targetClients[0].EventId;
+        }
+
     }
 }

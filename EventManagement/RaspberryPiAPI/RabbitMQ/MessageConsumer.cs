@@ -1,4 +1,5 @@
 ﻿using ClassLibrary;
+using CloudBackend.Entities;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.FeatureManagement;
 using RabbitMQ.AMQP.Client;
@@ -17,14 +18,16 @@ public class MessageConsumer : BackgroundService
 
     private readonly WebSocketClientManager _manager;
     IEventRegistrationCheckService eRegCheckService;
+    IStudentData studentData;
 
-    public MessageConsumer (WebSocketClientManager manager, IEventRegistrationCheckService eRegCheckService, IFeatureManager featureManager)
+    public MessageConsumer (WebSocketClientManager manager, IEventRegistrationCheckService eRegCheckService, IStudentData studentData, IFeatureManager featureManager)
     {
         Console.WriteLine("Message Consumer was created.");
 
         _manager = manager;
         _featureManager = featureManager;
         this.eRegCheckService = eRegCheckService;
+        this.studentData = studentData;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -33,7 +36,7 @@ public class MessageConsumer : BackgroundService
             .Uri(new Uri(brokerUri))
             .ContainerId("tutorial-send")
             .Build();
-
+        
         IEnvironment environment = AmqpEnvironment.Create(settings);
         IConnection connection = await environment.CreateConnectionAsync();
 
@@ -59,9 +62,15 @@ public class MessageConsumer : BackgroundService
                 string cardId = data.cardId;
                 string scannerId = data.scannerId;
 
-                string result;
-                if (await _featureManager.IsEnabledAsync("SkipEventUserCheck") == true) result = "allowed";
-                else result = await eRegCheckService.Check_If_Is_Registered(cardId);
+                Student student = await studentData.GetStudent(cardId);
+                int eventId = _manager.GetEventFromFrontend(scannerId);
+                var result = new
+                {
+                    student,
+                    status = (await _featureManager.IsEnabledAsync("SkipEventUserCheck"))
+                        ? "allowed"
+                        : await eRegCheckService.Check_If_Is_Registered(cardId, eventId)
+                };
                 
                 _manager.RouteScannerMessageAsync(scannerId, result);
                 Console.WriteLine (result);
