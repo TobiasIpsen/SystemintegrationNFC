@@ -1,4 +1,5 @@
-﻿using CloudBackend.Database;
+﻿using ClassLibrary;
+using CloudBackend.Database;
 using CloudBackend.dto;
 using CloudBackend.Entities;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -35,7 +36,13 @@ namespace CloudBackend.Service
                     .Where(e => studentRequest.EventIds.Contains(e.Id))
                     .ToListAsync();
 
-                student.Events = selectedEvents;
+                student.Events = selectedEvents
+                    .Select(e => new EventRegistrations
+                    {
+                        Event = e,
+                        CheckedIn = false
+                    })
+                    .ToList();
             }
             await _context.Students.AddAsync(student);
             await _context.SaveChangesAsync();
@@ -64,7 +71,13 @@ namespace CloudBackend.Service
                     .Where(e => studentRequest.EventIds.Contains(e.Id))
                     .ToListAsync();
 
-                student.Events = selectedEvents;
+                student.Events = selectedEvents
+                    .Select(e => new EventRegistrations
+                    {
+                        Event = e,
+                        CheckedIn = false
+                    })
+                    .ToList();
             }
 
             await _context.SaveChangesAsync();

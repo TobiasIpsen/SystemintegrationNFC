@@ -1,4 +1,5 @@
-﻿using CloudBackend.Entities;
+﻿using ClassLibrary;
+using CloudBackend.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace CloudBackend.Database
@@ -18,6 +19,9 @@ namespace CloudBackend.Database
             modelBuilder.Entity<Event>()
                 .HasIndex(e => e.Name)
                 .IsUnique();
+
+            modelBuilder.Entity<EventRegistrations>()
+                .HasKey(er => new { er.StudentId, er.EventId });
         }
     }
 }

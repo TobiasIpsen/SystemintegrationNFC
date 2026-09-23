@@ -1,4 +1,5 @@
-﻿using CloudBackend.Entities;
+﻿using ClassLibrary;
+using CloudBackend.Entities;
 using RabbitMQ.AMQP.Client;
 using RabbitMQ.AMQP.Client.Impl;
 using System.Text;
@@ -59,7 +60,8 @@ namespace CloudBackend.RabbitMQ
         {
             await EnsureInitializedAsync();
 
-            var msg = new {
+            MessageType msg = new MessageType
+            {
                 Student = student,
                 Timestamp = DateTimeOffset.UtcNow
             };
