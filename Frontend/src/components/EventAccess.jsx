@@ -48,9 +48,9 @@ const STATUS = {
   },
 };
 
-export default function EventAccess({ students, events }) {
-  const [eventId, setEventId] = useState(events[0]?.id || "");
-  const [cardId, setCardId] = useState("");
+export default function EventAccess() {
+  const [events, setEvents] = useState([]);
+  const [eventId, setEventId] = useState("");
   const [scan, setScan] = useState(null);
   const [history, setHistory] = useState([]);
 
@@ -61,37 +61,15 @@ export default function EventAccess({ students, events }) {
     }
     api
       .fetchAccessLog(eventId)
-      .then(setHistory)
+      .then((data) => {
+        // Handle both student objects and student IDs for backward compatibility
+        const studentList = Array.isArray(data)
+          ? data.map((item) => (typeof item === "object" ? item : item))
+          : [];
+        setHistory(studentList.filter(Boolean));
+      })
       .catch(() => setHistory([]));
   }, [eventId]);
-
-  const handleScan = async () => {
-    const student = students.find((s) => s.cardId === cardId.trim());
-
-    if (!student || !student.eventIds.includes(eventId)) {
-      setScan({ student: student || null, status: "notJoined" });
-      setCardId("");
-      return;
-    }
-
-    if (history.includes(student.id)) {
-      setScan({ student, status: "already" });
-      setCardId("");
-      return;
-    }
-
-    try {
-      await api.logAccess(eventId, student.id);
-      setHistory((prev) => [...prev, student.id]);
-      setScan({ student, status: "allowed" });
-    } catch {
-      // Someone else scanned this student in the split second before us —
-      // treat it the same as "already accessed".
-      setHistory((prev) => [...prev, student.id]);
-      setScan({ student, status: "already" });
-    }
-    setCardId("");
-  };
 
   const current = scan ? STATUS[scan.status] : null;
 
@@ -134,21 +112,30 @@ export default function EventAccess({ students, events }) {
       const data = JSON.parse(event.data);
 
       if (data.type === "scanner_list_updated") {
-        console.log(data.scanners);
+        console.log("[SCANNERS]", data.scanners);
         setScanners(data.scanners);
+      } else if (data.type === "event_list_updated") {
+        console.log("[EVENTS]", data.events);
+        setEvents(data.events);
+        if (!eventId && data.events.length > 0) {
+          setEventId(data.events[0].Id);
+        }
       } else if (data.type === "scanner_selected") {
-        console.log(data.scannerId);
+        console.log("[SELECTED SCANNER]", data.scannerId);
         setSelectedScannerId(data.scannerId);
       } else if (data.type === "scanner_message") {
-        console.log(data.data);
-        setMessage((prev) => [
-          ...prev,
-          {
-            from: data.scannerId,
-            data: data.data,
-            timestamp: new Date(data.timestamp),
-          },
-        ]);
+        const result = data.data;
+
+        if (result.student && result.status) {
+          const { student, status } = result;
+
+          if (status === "allowed") {
+            setHistory((prev) => [...prev, student]);
+          }
+
+          console.log(result);
+          setScan({ student, status });
+        }
       }
     };
 
@@ -161,8 +148,10 @@ export default function EventAccess({ students, events }) {
       console.log("✗ WebSocket disconnected");
       setWsConnected(false);
       wsRef.current = null;
-      setSelectedScannerId(null);
+      setSelectedScannerId("");
       setScanners([]);
+      setEvents([]);
+      setEventId("");
     };
 
     return () => {
@@ -179,6 +168,19 @@ export default function EventAccess({ students, events }) {
       const data = JSON.stringify({
         type: "select_scanner",
         scannerId: scannerId,
+      });
+      wsRef.current.send(data);
+    } else {
+      console.warn("WebSocket not connected");
+    }
+  };
+
+  const handleSelectEvent = (eventId) => {  
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      console.log(`Selecting event: ${eventId}`);
+      const data = JSON.stringify({
+        type: "select_event",
+        eventId: eventId,
       });
       wsRef.current.send(data);
     } else {
@@ -226,19 +228,38 @@ export default function EventAccess({ students, events }) {
         <Grid container spacing={2} alignItems="center">
           <Grid item xs={12} sm={6}>
             <TextField
-              select fullWidth label="Event" value={eventId}
-              onChange={(e) => { setEventId(e.target.value); setScan(null); }}
+              select
+              fullWidth
+              label="Event"
+              value={eventId ?? ""}
+              onChange={(e) => {
+                setEventId(e.target.value);
+                setScan(null);
+                handleSelectEvent(e.target.value);
+              }}
             >
-              {events.length === 0 && <MenuItem value="" disabled>No events yet</MenuItem>}
-              {events.map((ev) => <MenuItem key={ev.id} value={ev.id}>{ev.name}</MenuItem>)}
+              {events.length === 0 && (
+                <MenuItem value="" disabled>
+                  No events yet
+                </MenuItem>
+              )}
+              {events.map((ev) => (
+                <MenuItem key={ev.Id} value={ev.Id}>
+                  {ev.Name}
+                </MenuItem>
+              ))}
             </TextField>
           </Grid>
           <Grid item xs={12} sm={6}>
             <TextField
-              select fullWidth label="Scanner" value={selectedScannerId} onChange={handleSelectScanner}
+              select
+              fullWidth
+              label="Scanner"
+              value={selectedScannerId ?? ""}
+              onChange={handleSelectScanner}
             >
               {scanners.length === 0 && (
-                <MenuItem value="" disabled>
+                <MenuItem value={null} disabled>
                   No scanners yet
                 </MenuItem>
               )}
@@ -248,27 +269,7 @@ export default function EventAccess({ students, events }) {
                 </MenuItem>
               ))}
             </TextField>
-            {/* <TextField
-              fullWidth
-              label="Card ID"
-              placeholder="Tap or type card ID"
-              value={cardId}
-              onChange={(e) => setCardId(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleScan()}
-            /> */}
           </Grid>
-          {/* <Grid item xs={12} sm={2}>
-            <Button
-              fullWidth
-              variant="contained"
-              size="large"
-              onClick={handleScan}
-              disabled={!eventId || !cardId}
-              startIcon={<NfcIcon />}
-            >
-              Scan
-            </Button>
-          </Grid> */}
         </Grid>
       </Paper>
 
@@ -287,7 +288,7 @@ export default function EventAccess({ students, events }) {
           }}
         >
           <Avatar
-            src={scan.student?.image}
+            src={scan.student?.Image}
             sx={{
               width: 104,
               height: 104,
@@ -298,14 +299,14 @@ export default function EventAccess({ students, events }) {
               borderColor: current.color,
             }}
           >
-            {scan.student?.name?.[0] || "?"}
+            {scan.student?.Name?.[0] || "?"}
           </Avatar>
           <Typography variant="h5">
-            {scan.student?.name || "Unknown Card"}
+            {scan.student?.Name || "Unknown Card"}
           </Typography>
-          {scan.student?.className && (
+          {scan.student?.ClassName && (
             <Typography variant="body2" color="text.secondary">
-              {scan.student.className}
+              {scan.student.ClassName}
             </Typography>
           )}
           <Chip
@@ -345,18 +346,21 @@ export default function EventAccess({ students, events }) {
               </TableRow>
             </TableHead>
             <TableBody>
-              {history.map((studentId) => {
-                const s = students.find((st) => st.id === studentId);
-                if (!s) return null;
+              {history.map((student) => {
                 return (
-                  <TableRow key={studentId} hover>
+                  <TableRow key={student.Id} hover>
                     <TableCell>
-                      <Avatar src={s.image} sx={{ width: 32, height: 32 }}>
-                        {s.name[0]}
+                      <Avatar
+                        src={student.Image}
+                        sx={{ width: 32, height: 32 }}
+                      >
+                        {student.Name[0]}
                       </Avatar>
                     </TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>{s.name}</TableCell>
-                    <TableCell>{s.className}</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>
+                      {student.Name}
+                    </TableCell>
+                    <TableCell>{student.ClassName}</TableCell>
                   </TableRow>
                 );
               })}

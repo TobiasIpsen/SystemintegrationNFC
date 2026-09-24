@@ -5,15 +5,13 @@ using Npgsql;
 
 public interface IEventRegistrationCheckService
 {
-    Task<string?> Check_If_Is_Registered (string cardId);
+    Task<string?> Check_If_Is_Registered (string cardId, int eventId);
 }
 
 public class EventRegistrationCheckService (NpgsqlDataSource dataSource) : IEventRegistrationCheckService
 {
-    public async Task<string?> Check_If_Is_Registered (string cardId)
+    public async Task<string?> Check_If_Is_Registered (string cardId, int eventId)
     {
-        var hardcodedEventId = 0;
-
         bool studentExists = false;
         bool studentRegisteredForEvent = false;
         bool alreadyEntered = false;
@@ -42,7 +40,7 @@ public class EventRegistrationCheckService (NpgsqlDataSource dataSource) : IEven
             WHERE s.cardid = $1 AND e.eventid = $2
             """);
             cmd.Parameters.AddWithValue (cardId);
-            cmd.Parameters.AddWithValue (hardcodedEventId);
+            cmd.Parameters.AddWithValue (eventId);
 
             await using var reader = await cmd.ExecuteReaderAsync ();
             if (await reader.ReadAsync ())
@@ -81,7 +79,7 @@ public class EventRegistrationCheckService (NpgsqlDataSource dataSource) : IEven
                 WHERE s.id = e.studentid AND s.cardid = $1 AND e.eventid = $2
             """);
             cmd.Parameters.AddWithValue (cardId);
-            cmd.Parameters.AddWithValue (hardcodedEventId);
+            cmd.Parameters.AddWithValue (eventId);
             await cmd.ExecuteNonQueryAsync ();
 
             return "allowed";

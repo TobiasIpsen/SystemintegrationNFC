@@ -25,6 +25,7 @@ public class Program
         builder.Services.AddSingleton(NpgsqlDataSource.Create(
             builder.Configuration.GetConnectionString("RaspPiDb")!)
         );
+        builder.Services.AddSingleton<IStudentData, StudentData>();
         builder.Services.AddSingleton<IEventRegistrationCheckService, EventRegistrationCheckService>();
         builder.Services.AddHostedService<MessageConsumer>();
 
@@ -56,6 +57,7 @@ public class Program
 
                 clientManager.RegisterFrontendClient(clientId, webSocket);
                 clientManager.BroadcastScannerListAsync();
+                clientManager.BroadcastEventList();
                 Console.WriteLine($"{DateTime.Now} - Frontend client connected: {clientId}");
 
                 var buffer = new byte[1024 * 4];
@@ -86,6 +88,12 @@ public class Program
                                 var scannerId = message.GetProperty("scannerId").GetString();
                                 Console.WriteLine($"{DateTime.Now} - Client {clientId} selected scanner: {scannerId}");
                                 await clientManager.SelectScannerAsync(clientId, scannerId);
+                            }
+
+                            if (message.GetProperty("type").GetString() == "select_event")
+                            {
+                                int eventId = message.GetProperty("eventId").GetInt32();
+                                clientManager.SelectEventId(clientId, eventId);
                             }
                         }
                     }
