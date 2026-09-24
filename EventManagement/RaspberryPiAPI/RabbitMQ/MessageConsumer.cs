@@ -17,7 +17,9 @@ namespace RaspberryPiAPI.RabbitMQ;
 public class MessageConsumer : BackgroundService
 {
     private readonly IFeatureManager _featureManager;
-    const string brokerUri = "amqp://guest:guest@localhost:5672/%2f"; // For local testing
+    private readonly string brokerUri; // So we can config
+    // These remain here as documentation / reference
+    //const string brokerUri = "amqp://guest:guest@localhost:5672/%2f"; // For local testing
     /*const string brokerUri = "amqp://guest:guest@192.168.137.1:5672/%2f";*/ // For "cloud's" connection
 
     private readonly WebSocketClientManager _manager;
@@ -25,7 +27,7 @@ public class MessageConsumer : BackgroundService
     IEventRegistrationCheckService eRegCheckService;
     IStudentData studentData;
 
-    public MessageConsumer (WebSocketClientManager manager, NpgsqlDataSource dataSource, IEventRegistrationCheckService eRegCheckService, IStudentData studentData, IFeatureManager featureManager)
+    public MessageConsumer (WebSocketClientManager manager, NpgsqlDataSource dataSource, IEventRegistrationCheckService eRegCheckService, IStudentData studentData, IFeatureManager featureManager, IConfiguration configuration)
     {
         Console.WriteLine("Message Consumer was created.");
 
@@ -33,6 +35,7 @@ public class MessageConsumer : BackgroundService
         _featureManager = featureManager;
         this.dataSource = dataSource;
         this.eRegCheckService = eRegCheckService;
+        brokerUri = configuration["RabbitMQ:Uri"] ?? throw new InvalidOperationException ("Missing config: RabbitMQ:Uri");
         this.studentData = studentData;
     }
 

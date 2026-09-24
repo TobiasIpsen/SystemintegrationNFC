@@ -42,6 +42,13 @@ public class Program
 
         var app = builder.Build();
 
+        if (!builder.Configuration.GetSection ("FeatureManagement").Exists ()
+            || builder.Configuration["FeatureManagement:SkipEventUserCheck"] is null)
+        {
+            throw new InvalidOperationException (
+                "Missing required env var: FeatureManagement__SkipEventUserCheck=<true|false>");
+        }
+
         app.UseCors();
 
         app.UseWebSockets();
