@@ -1,23 +1,20 @@
 ﻿services:
   RaspberryPiBackendDb:
+    container_name: rasppidb
     image: postgres:18-alpine
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "pg_isready", "-U", "postgres"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
     ports:
       # - 5432:5432
       - 5438:5432
     volumes:
-      - ./data/postgres-data:/var/lib/postgresql/data_rasppibackenddb
+      - ./data/postgres-data:/var/lib/postgresql
     environment:
       - POSTGRES_USER=root
       - POSTGRES_PASSWORD=root
       - POSTGRES_DB=rasppidb
 
   rabbitmq:
+    container_name: rasppi_rabbitmq
     image: rabbitmq:4-management-alpine
     restart: unless-stopped
     ports:
@@ -33,6 +30,4 @@
       # - ./data/rabbitmq-data:/var/lib/rabbitmq
     # Fix: RabbitMQ only needs persistence for the 'mnesia' subfolder - the .erlang.cookie is fine living in the container's own writable layer, where permissions work correctly.
       - ./data/rabbitmq-data:/var/lib/rabbitmq/mnesia
-
-volumes:
 
