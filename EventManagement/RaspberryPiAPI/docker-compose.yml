@@ -30,4 +30,3 @@
       # - ./data/rabbitmq-data:/var/lib/rabbitmq
     # Fix: RabbitMQ only needs persistence for the 'mnesia' subfolder - the .erlang.cookie is fine living in the container's own writable layer, where permissions work correctly.
       - ./data/rabbitmq-data:/var/lib/rabbitmq/mnesia
-
