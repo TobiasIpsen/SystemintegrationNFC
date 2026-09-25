@@ -14,6 +14,11 @@
       - POSTGRES_DB=rasppidb
 
   rabbitmq:
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     container_name: rasppi_rabbitmq
     image: rabbitmq:4-management-alpine
     restart: unless-stopped
@@ -23,6 +28,7 @@
     environment:
       - RABBITMQ_DEFAULT_USER=guest
       - RABBITMQ_DEFAULT_PASS=guest
+      - RabbitMQ__Uri=amqp://guest:guest@rabbitmq:5672/%2f
     volumes:
     # THIS IS BAD (in our context) ; RabbitMQ + Windows mount binding : RabbitMQ requires an .erlang.cookie to have 600 permissions (owner only),
     # but when we bind-mount a Windows host folder (./data/rabbitmq-data:/var/lib/rabbitmq) straight onto /var/lib/rabbitmq , the cookie gets created
@@ -31,16 +37,20 @@
     # Fix: RabbitMQ only needs persistence for the 'mnesia' subfolder - the .erlang.cookie is fine living in the container's own writable layer, where permissions work correctly.
       - ./data/rabbitmq-data:/var/lib/rabbitmq/mnesia
 
-  # rasppi-api:
-  #   container_name: rasppi_api
-  #   build:
-  #     context: ..
-  #     dockerfile: RaspberryPiAPI/Dockerfile
-  #   ports:
-  #     - "5291:8080"
-  #   environment:
-  #     # Overrides the appsettings' connection string ; this way we can both do local dev with one port-setting and run it via compose, which'll match the other compose services
-  #     - ConnectionStrings__RaspPiDb=Host=RaspberryPiBackendDb;Port=5432;Database=rasppidb;Username=root;Password=root
-  #   depends_on:
-  #     - RaspberryPiBackendDb
-  #     - rabbitmq
+  rasppi-api:
+    container_name: rasppi_api
+    build:
+      context: ..
+      dockerfile: RaspberryPiAPI/Dockerfile
+    ports:
+      - "5292:8080"
+    environment:
+      # Overrides the appsettings' connection string ; this way we can both do local dev with one port-setting and run it via compose, which'll match the other compose services
+      - ConnectionStrings__RaspPiDb=Host=RaspberryPiBackendDb;Port=5432;Database=rasppidb;Username=root;Password=root
+      - "FeatureManagement__SkipEventUserCheck=${feattogg_skipusereventcheck:?Missing flag: feattogg_skipusereventcheck=<true|false>}"
+      - RabbitMQ__Uri=amqp://guest:guest@rabbitmq:5672/%2f
+    depends_on:
+      RaspberryPiBackendDb:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
