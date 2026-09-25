@@ -30,3 +30,17 @@
       # - ./data/rabbitmq-data:/var/lib/rabbitmq
     # Fix: RabbitMQ only needs persistence for the 'mnesia' subfolder - the .erlang.cookie is fine living in the container's own writable layer, where permissions work correctly.
       - ./data/rabbitmq-data:/var/lib/rabbitmq/mnesia
+
+  # rasppi-api:
+  #   container_name: rasppi_api
+  #   build:
+  #     context: ..
+  #     dockerfile: RaspberryPiAPI/Dockerfile
+  #   ports:
+  #     - "5291:8080"
+  #   environment:
+  #     # Overrides the appsettings' connection string ; this way we can both do local dev with one port-setting and run it via compose, which'll match the other compose services
+  #     - ConnectionStrings__RaspPiDb=Host=RaspberryPiBackendDb;Port=5432;Database=rasppidb;Username=root;Password=root
+  #   depends_on:
+  #     - RaspberryPiBackendDb
+  #     - rabbitmq

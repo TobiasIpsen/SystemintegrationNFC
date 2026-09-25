@@ -10,5 +10,10 @@ namespace CloudBackend.Entities
         public string CardId { get; set; }
         public string Image { get; set; }
         public List<EventRegistrations> Events { get; set; }
+
+        public override string ToString ()
+        {
+            return $"{Id} - {Name}, {ClassName}, {CardId}, {Image}";
+        }
     }
 }
