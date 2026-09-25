@@ -43,10 +43,16 @@
       context: ..
       dockerfile: RaspberryPiAPI/Dockerfile
     ports:
-      - "5292:8080"
+      #- "5292:8080"
+      - "5182:8080"
     environment:
       # Overrides the appsettings' connection string ; this way we can both do local dev with one port-setting and run it via compose, which'll match the other compose services
       - ConnectionStrings__RaspPiDb=Host=RaspberryPiBackendDb;Port=5432;Database=rasppidb;Username=root;Password=root
+      # Ensures the feature toggle is present when composing up
+      # BASH variant:
+      # feattogg_skipusereventcheck=true docker compose up -d
+      # Powershell variant:
+      # $env:feattogg_skipusereventcheck="true"; docker compose up -d
       - "FeatureManagement__SkipEventUserCheck=${feattogg_skipusereventcheck:?Missing flag: feattogg_skipusereventcheck=<true|false>}"
       - RabbitMQ__Uri=amqp://guest:guest@rabbitmq:5672/%2f
     depends_on:

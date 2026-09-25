@@ -56,12 +56,14 @@ public class MessageConsumer : BackgroundService
         IQueueSpecification queueSpec = management.Queue("nfc_sender").Type(QueueType.QUORUM);
         await queueSpec.DeclareAsync();
 
+        bool skipEventUserCheck = await _featureManager.IsEnabledAsync ("SkipEventUserCheck");
+
         IConsumer consumer = await connection.ConsumerBuilder()
             .Queue("nfc_sender")
             .MessageHandler(async (ctx, message) =>
             {
                 string messageContent = Encoding.UTF8.GetString(message.Body()!);
-                Console.WriteLine($"{Timestamp()} Received an NFC message:");
+                Console.WriteLine($"{Timestamp()} Received an NFC message (skipEventUserCheck is {skipEventUserCheck}):");
                 Console.WriteLine ($"{messageContent}");
 
                 //string cardPortion = messageContent.Substring (2, messageContent.Length - 2).Replace("-", "");
@@ -76,12 +78,12 @@ public class MessageConsumer : BackgroundService
                 var result = new
                 {
                     student,
-                    status = (await _featureManager.IsEnabledAsync("SkipEventUserCheck"))
+                    status = (skipEventUserCheck)
                         ? "allowed"
                         : await eRegCheckService.Check_If_Is_Registered(cardId, eventId)
                 };
                 
-                _manager.RouteScannerMessageAsync(scannerId, result);
+                await _manager.RouteScannerMessageAsync(scannerId, result);
                 Console.WriteLine (result);
 
                 // TODO Ship back result via Tobysocket

@@ -29,8 +29,8 @@ namespace RaspberryPiAPI.Services
                         Id = reader.GetInt32(reader.GetOrdinal("id")),
                         Name = reader.GetString(reader.GetOrdinal("name")),
                         CardId = reader.GetString(reader.GetOrdinal("cardid")),
-                        ClassName = reader.GetString(reader.GetOrdinal("userclass")),
-                        Image = reader.GetString(reader.GetOrdinal("image")),
+                        ClassName = reader.IsDBNull (reader.GetOrdinal ("userclass")) ? null : reader.GetString (reader.GetOrdinal ("userclass")),
+                        Image = reader.IsDBNull (reader.GetOrdinal("image")) ? null :  reader.GetString(reader.GetOrdinal("image")),
                         Events = []
                     };
                 }

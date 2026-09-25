@@ -170,7 +170,7 @@ namespace RaspberryPiAPI.Services
                 .Where(c => c.SelectedScannerId == scannerId)
                 .ToList();
 
-            return targetClients[0].EventId;
+            return targetClients.Count > 0 ? targetClients[0].EventId : -1;
         }
 
     }

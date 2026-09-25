@@ -126,7 +126,7 @@ export default function EventAccess() {
       } else if (data.type === "scanner_message") {
         const result = data.data;
 
-        if (result.student && result.status) {
+        if (result.status) {
           const { student, status } = result;
 
           if (status === "allowed") {
