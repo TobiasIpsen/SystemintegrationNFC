@@ -74,11 +74,18 @@ public class MessageConsumer : BackgroundService
                 string scannerId = data.scannerId;
 
                 Student student = await studentData.GetStudent(cardId);
+
+                // For displaying the cardId in the frontend, intended for the speed-test 28-09-2026
+                if (student == null)
+                {
+                    student = new Student () { CardId = cardId };
+                }
+
                 int eventId = _manager.GetEventFromFrontend(scannerId);
                 var result = new
                 {
                     student,
-                    status = (skipEventUserCheck)
+                    status = skipEventUserCheck
                         ? "allowed"
                         : await eRegCheckService.Check_If_Is_Registered(cardId, eventId)
                 };

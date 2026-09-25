@@ -134,6 +134,7 @@ export default function EventAccess() {
           }
 
           console.log(result);
+          console.log("Card Id received:", result.student?.CardId);
           setScan({ student, status });
         }
       }
