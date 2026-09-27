@@ -349,7 +349,7 @@ export default function EventAccess() {
             <TableBody>
               {history.map((student, index) => {
                 return (
-                  <TableRow key={student.Id || `${student.CardId}-${index}`} hover>
+                  <TableRow key={`${student.CardId}-${index}`} hover>
                     <TableCell>
                       <Avatar
                         src={student.Image}
