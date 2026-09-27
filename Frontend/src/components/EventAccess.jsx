@@ -347,19 +347,19 @@ export default function EventAccess() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {history.map((student) => {
+              {history.map((student, index) => {
                 return (
-                  <TableRow key={student.Id} hover>
+                  <TableRow key={student.Id || `${student.CardId}-${index}`} hover>
                     <TableCell>
                       <Avatar
                         src={student.Image}
                         sx={{ width: 32, height: 32 }}
                       >
-                        {student.Name[0]}
+                        {student.Name?.[0] ?? "? (Skip Check probably)"}
                       </Avatar>
                     </TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>
-                      {student.Name}
+                      {student.Name ?? "Unknown (Skip Check probably)"}
                     </TableCell>
                     <TableCell>{student.ClassName}</TableCell>
                   </TableRow>

@@ -1,16 +1,12 @@
 ﻿using ClassLibrary;
 using CloudBackend.Entities;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.FeatureManagement;
 using Npgsql;
 using RabbitMQ.AMQP.Client;
 using RabbitMQ.AMQP.Client.Impl;
 using RaspberryPiAPI.Services;
-using System.Data.Common;
 using System.Text;
 using System.Text.Json;
-using System.Xml.Linq;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace RaspberryPiAPI.RabbitMQ;
 
@@ -78,7 +74,7 @@ public class MessageConsumer : BackgroundService
                 // For displaying the cardId in the frontend, intended for the speed-test 28-09-2026
                 if (student == null)
                 {
-                    student = new Student () { CardId = cardId };
+                    student = new Student () { Name = "Null Student", CardId = cardId };
                 }
 
                 int eventId = _manager.GetEventFromFrontend(scannerId);
