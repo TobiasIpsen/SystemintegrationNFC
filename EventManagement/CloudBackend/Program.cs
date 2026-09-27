@@ -51,7 +51,12 @@ namespace CloudBackend
             builder.Services.AddScoped<IStudentService, StudentService>();
             builder.Services.AddScoped<IEventService, EventService>();
 
-            builder.Services.AddControllers();
+            //builder.Services.AddControllers();
+            builder.Services.AddControllers () // Temp fix for demo monday 28-09-2k26 ; fixes infinite cycles in circular ref Student.Events->EventRegistrations.Student-> Student.Events ... (infinite)
+            .AddJsonOptions (options =>
+            {
+                options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+            });
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
 
