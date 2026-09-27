@@ -126,7 +126,7 @@ export default function EventAccess() {
       } else if (data.type === "scanner_message") {
         const result = data.data;
 
-        if (result.student && result.status) {
+        if (result.status) {
           const { student, status } = result;
 
           if (status === "allowed") {
@@ -134,6 +134,7 @@ export default function EventAccess() {
           }
 
           console.log(result);
+          console.log("Card Id received:", result.student?.CardId);
           setScan({ student, status });
         }
       }
@@ -346,19 +347,19 @@ export default function EventAccess() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {history.map((student) => {
+              {history.map((student, index) => {
                 return (
-                  <TableRow key={student.Id} hover>
+                  <TableRow key={`${student.CardId}-${index}`} hover>
                     <TableCell>
                       <Avatar
                         src={student.Image}
                         sx={{ width: 32, height: 32 }}
                       >
-                        {student.Name[0]}
+                        {student.Name?.[0] ?? "? (Skip Check probably)"}
                       </Avatar>
                     </TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>
-                      {student.Name}
+                      {student.Name ?? "Unknown (Skip Check probably)"}
                     </TableCell>
                     <TableCell>{student.ClassName}</TableCell>
                   </TableRow>

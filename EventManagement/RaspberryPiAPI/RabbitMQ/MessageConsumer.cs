@@ -1,23 +1,21 @@
 ﻿using ClassLibrary;
 using CloudBackend.Entities;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.FeatureManagement;
 using Npgsql;
 using RabbitMQ.AMQP.Client;
 using RabbitMQ.AMQP.Client.Impl;
 using RaspberryPiAPI.Services;
-using System.Data.Common;
 using System.Text;
 using System.Text.Json;
-using System.Xml.Linq;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace RaspberryPiAPI.RabbitMQ;
 
 public class MessageConsumer : BackgroundService
 {
     private readonly IFeatureManager _featureManager;
-    const string brokerUri = "amqp://guest:guest@localhost:5672/%2f"; // For local testing
+    // Merges fucked stuff up ; still keeping these two for reference - will be overwritten by 
+    private readonly string brokerUri;
+    //private const string brokerUri = "amqp://guest:guest@localhost:5672/%2f"; // For local testing
     /*const string brokerUri = "amqp://guest:guest@192.168.137.1:5672/%2f";*/ // For "cloud's" connection
 
     private readonly WebSocketClientManager _manager;
@@ -25,7 +23,7 @@ public class MessageConsumer : BackgroundService
     IEventRegistrationCheckService eRegCheckService;
     IStudentData studentData;
 
-    public MessageConsumer (WebSocketClientManager manager, NpgsqlDataSource dataSource, IEventRegistrationCheckService eRegCheckService, IStudentData studentData, IFeatureManager featureManager)
+    public MessageConsumer (WebSocketClientManager manager, NpgsqlDataSource dataSource, IEventRegistrationCheckService eRegCheckService, IStudentData studentData, IFeatureManager featureManager, IConfiguration configuration)
     {
         Console.WriteLine("Message Consumer was created.");
 
@@ -34,6 +32,7 @@ public class MessageConsumer : BackgroundService
         this.dataSource = dataSource;
         this.eRegCheckService = eRegCheckService;
         this.studentData = studentData;
+        brokerUri = configuration["RabbitMQ:Uri"] ?? throw new InvalidOperationException ("Missing config: RabbitMQ:Uri");
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -53,12 +52,14 @@ public class MessageConsumer : BackgroundService
         IQueueSpecification queueSpec = management.Queue("nfc_sender").Type(QueueType.QUORUM);
         await queueSpec.DeclareAsync();
 
+        bool skipEventUserCheck = await _featureManager.IsEnabledAsync ("SkipEventUserCheck");
+
         IConsumer consumer = await connection.ConsumerBuilder()
             .Queue("nfc_sender")
             .MessageHandler(async (ctx, message) =>
             {
                 string messageContent = Encoding.UTF8.GetString(message.Body()!);
-                Console.WriteLine($"{Timestamp()} Received an NFC message:");
+                Console.WriteLine($"{Timestamp()} Received an NFC message (skipEventUserCheck is {skipEventUserCheck}):");
                 Console.WriteLine ($"{messageContent}");
 
                 //string cardPortion = messageContent.Substring (2, messageContent.Length - 2).Replace("-", "");
@@ -69,16 +70,23 @@ public class MessageConsumer : BackgroundService
                 string scannerId = data.scannerId;
 
                 Student student = await studentData.GetStudent(cardId);
+
+                // For displaying the cardId in the frontend, intended for the speed-test 28-09-2026
+                if (student == null)
+                {
+                    student = new Student () { Name = "Null Student", CardId = cardId };
+                }
+
                 int eventId = _manager.GetEventFromFrontend(scannerId);
                 var result = new
                 {
                     student,
-                    status = (await _featureManager.IsEnabledAsync("SkipEventUserCheck"))
+                    status = skipEventUserCheck
                         ? "allowed"
                         : await eRegCheckService.Check_If_Is_Registered(cardId, eventId)
                 };
                 
-                _manager.RouteScannerMessageAsync(scannerId, result);
+                await _manager.RouteScannerMessageAsync(scannerId, result);
                 Console.WriteLine (result);
 
                 // TODO Ship back result via Tobysocket

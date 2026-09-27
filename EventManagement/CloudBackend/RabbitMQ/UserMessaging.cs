@@ -56,7 +56,9 @@ namespace CloudBackend.RabbitMQ
             }
         }
 
-        public async void SendMessage(Student student)
+        // This was previously set to 'void', which resulted in errors not surfacing & frontend still receiving 200 as if no problem occurred
+        // E.g. rabbitmq not reachable yet, connection timing issues, etc.
+        public async Task SendMessage(Student student)
         {
             await EnsureInitializedAsync();
 

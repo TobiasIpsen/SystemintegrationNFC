@@ -34,7 +34,16 @@ internal class Program
         {
             await Send_Message(_scannerId, "registerScanner");
 
-            Read_From_Card_Improved(_scannerId);
+            Console.WriteLine ("Press T for scanner test mode (register/unregister only, no hardware needed), or any other key for normal card reading.");
+            var choice = Console.ReadKey (true);
+            if (choice.Key == ConsoleKey.T)
+            {
+                await Test_Mode_Loop (_scannerId);
+            }
+            else
+            {
+                Read_From_Card_Improved (_scannerId);
+            }
 
             Console.WriteLine("No longer awaiting NFC input.");
         }
@@ -47,6 +56,56 @@ internal class Program
 
         Console.WriteLine("Press any key to exit the application.");
         Console.ReadLine();
+    }
+
+    static async Task Test_Mode_Loop (string scannerId)
+    {
+        Console.WriteLine ("Test mode: R = register, U = unregister, Q = quit test mode.");
+        while (true)
+        {
+            var input = Console.ReadKey (true);
+
+            if (input.Key == ConsoleKey.R)
+            {
+                Console.WriteLine ("Sending test registerScanner message.");
+                await Send_Message (scannerId, "registerScanner");
+            }
+
+            if (input.Key == ConsoleKey.U)
+            {
+                Console.WriteLine ("Sending test scannerDisconnect message.");
+                await Send_Message (scannerId, "scannerDisconnect");
+            }
+
+            // Randomnized Id
+            if (input.Key == ConsoleKey.D1)
+            {
+                string randomCardId = Guid.NewGuid ().ToString ("N")[..8];
+                Console.WriteLine ($"Sending random test card: {randomCardId}");
+                await Send_Message (new CardScannerData
+                {
+                    cardId = randomCardId,
+                    scannerId = scannerId
+                });
+            }
+
+            // Specific Id
+            if (input.Key == ConsoleKey.D2)
+            {
+                const string knownCardId = "00000000";
+                Console.WriteLine ($"Sending known test card: {knownCardId}");
+                await Send_Message (new CardScannerData
+                {
+                    cardId = knownCardId,
+                    scannerId = scannerId
+                });
+            }
+
+            if (input.Key == ConsoleKey.Q)
+            {
+                break;
+            }
+        }
     }
 
     static async Task Read_From_Card_Improved(string scannerId)

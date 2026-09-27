@@ -2,7 +2,7 @@
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
 
- EXPOSE 8080
+EXPOSE 8080
 
 WORKDIR /rasppibackend
 
